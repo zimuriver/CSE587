@@ -1,0 +1,290 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 11.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     12508,        282]
+NotebookOptionsPosition[     10924,        247]
+NotebookOutlinePosition[     11261,        262]
+CellTagsIndexPosition[     11218,        259]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["PHMM parameter updating", "Chapter",
+ CellChangeTimes->{{3.686925370515684*^9, 
+  3.686925376587515*^9}},ExpressionUUID->"15ee86dd-3198-403c-8faf-\
+b5864dd7f525"],
+
+Cell["\<\
+In this programming assignment, you will code some functions that can take in \
+a multiple sequence alignment and return a PHMM with probability values that \
+are updated to reflect the alignment.
+This will show you how to use an MSA in order to output a PHMM that can be \
+used by software like HMMER to align additional sequences to the family.\
+\>", "Text",
+ CellChangeTimes->{{3.686925435090487*^9, 3.686925644023075*^9}, {
+  3.6869379823377333`*^9, 
+  3.6869379831619234`*^9}},ExpressionUUID->"ef168f21-789e-4b75-800e-\
+8d8dedff9d6d"],
+
+Cell[CellGroupData[{
+
+Cell["Assignment outline", "Section",
+ CellChangeTimes->{{3.6869256626810493`*^9, 
+  3.686925666720716*^9}},ExpressionUUID->"5334efe8-f2c1-43ae-944a-\
+9921714873fb"],
+
+Cell[TextData[{
+ "You should find in your project : \n1. this notebook\n2. an MSA file \
+(sequence.txt)\n3. a code file (tools.m) containing\n\t- a parser to read the \
+MSA file into a matrix of sequence values (assumes the MSA file uses the DNA \
+alphabet)\n\t- a function that takes in a number of match states and length \
+of alphabet, and returns a PHMM skeleton w/Laplace pseudo counts \n4. a \
+skeleton code file (code.m) for you to finish\n\n",
+ StyleBox["The structure of the PHMM", "Subsubsection"],
+ "\nWhen you call skeletonPHMM with numMatch and alphabetLength, you will get \
+4 lists:\n\t1. Insert0 state emission counts as a list with length \
+alphabetLength\n\t2. Initial transition counts as a list representing:\n\t\tB \
+\[RightArrow] M1, B \[RightArrow] I0, B \[RightArrow] D1; I0 \[RightArrow] \
+M1, I0 \[RightArrow] I0\n\tWhere B is the begin state, M1 is the first match \
+state, and I0 is the insertion state before the first match state\n\t3. A \
+list of two emission matrices, the first for insertion states, the second for \
+match states\n\t\tEach inner matrix is organized to have the same number of \
+rows as match states and the same number of columns as letters in the \
+alphabet\n\t4. A matrix of transitions\n\t\tThis matrix is organized to have \
+the same number of rows as match states, and the columns represent:\n\t\t\tMk \
+\[RightArrow] Mk + 1, Mk \[RightArrow] Ik, Mk \[RightArrow] Dk + 1; Ik \
+\[RightArrow] Mk + 1, Ik \[RightArrow] Ik; Dk \[RightArrow] Mk + 1, Dk \
+\[RightArrow] Dk + 1\n\t\tWhere Mk is the \
+\[OpenCurlyQuote]k\[CloseCurlyQuote]th match state, Ik is the \
+\[OpenCurlyQuote]k\[CloseCurlyQuote]th Insertion state, and Dk is the \
+\[OpenCurlyQuote]kth\[CloseCurlyQuote] deletion state\nThis PHMM structure \
+assumes no transitions between Insertion and Deletion states, but please \
+handle them by printing an error statement and moving on.\n\t\t\n\t\t\n",
+ StyleBox["What your code should do:", "Subsubsection"],
+ "\nAfter reading in the MSA file with the parsingMSA function in tools.m, \
+decide how many match states to give the PHMM (already implemented for you in \
+the createPHMM function)\n\t- If 50% of sequences do not have a gap at that \
+position, then the position is a match state \nAfter creating a PHMM with \
+LaPlace pseudocounts using the skeletonPHMM function in tools.m (already \
+implemented for you in the createPHMM function), update the counts using each \
+sequence in the MSA (to do in the updatePHMM function)\nAfter all the \
+sequences have been used to update the counts, normalize them into \
+probability values (to do in the normalizePHMM function)\n\n\n",
+ StyleBox["Things to check in your output:", "Subsubsection"],
+ "\nFor the last row in your transition matrix, Mk + 1 is the end state, and \
+transitions to the end state are special:\n\t\tPr(Mk \[RightArrow] Mk + 1) \t\
+= ?\n\t\tPr(Mk \[RightArrow] Ik)\t \t= ?\n\t\tPr(Mk \[RightArrow] Dk + 1) \t= \
+0\n\t\tPr(Ik \[RightArrow] Mk + 1) \t= ?\n\t\tPr(Ik \[RightArrow] Ik) \t\t= ?\
+\n\t\tPr(Dk \[RightArrow] Mk + 1) \t= 1\n\t\tPr(Dk \[RightArrow] Dk + 1) \t= \
+0\nIf you update your counts and normalize your probabilities correctly, you \
+shouldn\[CloseCurlyQuote]t need to do anything additional to get the 0 and 1 \
+values for this last transition.\n\n",
+ StyleBox["Rubric:", "Subsection"],
+ "\n1 point for producing a reasonable output in the correct format\n3 points \
+for the correct pHMM parameter values\n\n1 extra credit point if you write a \
+parser to convert your output into a pHMM file format readable by HMMER\nGo \
+here to read more on HMMER: http://hmmer.org"
+}], "Text",
+ CellChangeTimes->CompressedData["
+1:eJwdylsog3EABfChva1cUso1WtSsZOFjtbXPsoXM9YGtJEOSbCRWhEY2l0TM
+rbk8COVOIdNEuaXcHiQyuWT4sMiTB/zP93D61TkntFCXVezO4XBCSCCTnf5q
+rWFomVnAwMcFtccIUdTQxoVTqrxmmH4kNMFAqqwXxrVE9rG71DEMl6Pbx2BH
+QfAW1NkeriC/zhU2Soyw2/lQ+r6ph07eYj00u2qb4LdvaRfcGXr/Sall6IPb
+F14qUf95PCszMHST5HIP+hhNUpo4GFItg37i3SToLtQmQ6WbPQfGVGrUsH4i
+XAs3jEtV7I97ZoAXkqg6GH6+0gb7pzQW6HTRVtgdfbcHxV7zu4nERsvNEVwv
+3zmB8pn7U3g6NxQrJ1Zl8ij4/By/rCBOFnmuQv9Dkw3yqb9N+Gi93YYi709W
+RcDfPtuXaI5hv+vpEs5OXzvgeOd0mpLY+vWbCYUXsnzIHVCxWta+tDCG+SiH
+GT25BqjKCDLC84RuqkLwRq8azPHwH8rf/fo=
+  
+  "],ExpressionUUID->"b5f17dc8-1bf0-4d0e-88a6-ba574ed40e32"],
+
+Cell[CellGroupData[{
+
+Cell["Hints for your implementation", "Subsection",
+ CellChangeTimes->{{3.6869279490703773`*^9, 3.6869279530127707`*^9}, {
+  3.686938372403696*^9, 
+  3.686938372793789*^9}},ExpressionUUID->"1f78294c-0752-4958-a491-\
+22198451f83b"],
+
+Cell["\<\
+The majority of this assignment is understanding how to keep track of which \
+state you\[CloseCurlyQuote]re in, which state you\[CloseCurlyQuote]re coming \
+from, and how to decide which part of the PHMM should have a count added. The \
+simplest approach is to use a lot of If statements, which will quickly result \
+in functions with many lines of code that are hard to keep track of. As such, \
+we highly recommend splitting chunks of If statements into well-named helper \
+functions. 
+My implementation included functions \
+\[OpenCurlyDoubleQuote]updateToFirstMatch\[CloseCurlyDoubleQuote] (because \
+all transitions up to the first match state updates the counts in part2 of \
+the PHMM while everything after that should update the counts in part4 of the \
+PHMM), \[OpenCurlyDoubleQuote]updateMatch\[CloseCurlyDoubleQuote], and \
+\[OpenCurlyDoubleQuote]updateNonMatch\[CloseCurlyDoubleQuote].
+
+You may have already noticed by now, but Mathematica functions do not allow \
+you to change the value of input variables:\
+\>", "Text",
+ CellChangeTimes->{{3.686927955260582*^9, 3.6869280422687817`*^9}, {
+  3.686928097291978*^9, 3.6869282568076057`*^9}, {3.686928814298431*^9, 
+  3.686928963700574*^9}},ExpressionUUID->"e39d249b-b749-4012-b111-\
+752f1d9378b5"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{
+   RowBox[{"testFunction", "[", "input_", "]"}], ":=", "\[IndentingNewLine]", 
+   
+   RowBox[{"Module", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"localVariable", "=", "1"}], "}"}], ",", "\[IndentingNewLine]", 
+     
+     RowBox[{
+      RowBox[{"input", " ", "++"}], ";", " ", 
+      RowBox[{"localVariable", "++"}], ";", "\[IndentingNewLine]", 
+      RowBox[{"Print", "[", 
+       RowBox[{"input", ",", " ", "\"\<\\t\>\"", ",", " ", "localVariable"}], 
+       "]"}]}]}], "\[IndentingNewLine]", "]"}]}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{"testFunction", "[", "10", "]"}]}], "Input",
+ CellChangeTimes->{{3.686928260577795*^9, 
+  3.686928341872878*^9}},ExpressionUUID->"6dad5522-1872-4876-9f19-\
+a084733ec3a1"],
+
+Cell[BoxData[
+ TemplateBox[{
+  "Increment","rvalue",
+   "\"\\!\\(\\*RowBox[{\\\"10\\\"}]\\) is not a variable with a value, so its \
+value cannot be changed.\"",2,3,1,30601343036472133436,"Local"},
+  "MessageTemplate"]], "Message", "MSG",
+ CellChangeTimes->{
+  3.68692834270805*^9},ExpressionUUID->"da62a13b-a8ab-4877-9b46-b524a35a3ace"],
+
+Cell[BoxData[
+ InterpretationBox[
+  RowBox[{"10", "\[InvisibleSpace]", "\<\"\\t\"\>", "\[InvisibleSpace]", "2"}],
+  SequenceForm[10, "\t", 2],
+  Editable->False]], "Print",
+ CellChangeTimes->{
+  3.686928342716577*^9},ExpressionUUID->"e12fd0bc-6de7-4cba-b3aa-\
+64b2554fa33e"]
+}, Open  ]],
+
+Cell["\<\
+So when you pass around pieces of the PHMM or state tracking variables \
+between functions, please keep this in mind! Example fix:\
+\>", "Text",
+ CellChangeTimes->{{3.686928354947043*^9, 3.686928371229701*^9}, {
+  3.6869286520962353`*^9, 3.6869287130871*^9}, {3.686938424554891*^9, 
+  3.6869384259696503`*^9}},ExpressionUUID->"8fdc26fc-9e5d-407b-b84c-\
+304af2e65f85"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{
+   RowBox[{"testFunctionFixed", "[", "input_", "]"}], ":=", "\n", "\t", 
+   RowBox[{"Module", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"localVariable", "=", "1"}], ",", " ", 
+       RowBox[{"updatedInput", " ", "=", " ", "input"}]}], "}"}], ",", "\n", 
+     "\t\t", 
+     RowBox[{
+      RowBox[{"updatedInput", " ", "++"}], ";", " ", 
+      RowBox[{"localVariable", "++"}], ";", "\n", "\t\t", 
+      RowBox[{"Print", "[", 
+       RowBox[{
+       "updatedInput", ",", " ", "\"\<\\t\>\"", ",", " ", "localVariable"}], 
+       "]"}]}]}], "\n", "\t", "]"}]}], ";"}], "\n", 
+ RowBox[{"testFunctionFixed", "[", "10", "]"}]}], "Input",
+ CellChangeTimes->{{3.686928714346755*^9, 
+  3.686928746044633*^9}},ExpressionUUID->"5dc2a534-e4fe-4eb7-b386-\
+28d33dfec459"],
+
+Cell[BoxData[
+ InterpretationBox[
+  RowBox[{"11", "\[InvisibleSpace]", "\<\"\\t\"\>", "\[InvisibleSpace]", "2"}],
+  SequenceForm[11, "\t", 2],
+  Editable->False]], "Print",
+ CellChangeTimes->{
+  3.6869287467760487`*^9},ExpressionUUID->"7434e709-5c38-42c6-bc7d-\
+6f7d8f8c6568"]
+}, Open  ]],
+
+Cell["\<\
+Also be cautious when normalizing. For example, the initial transitions list \
+holds values for:
+\tB \[RightArrow] M1, B \[RightArrow] I0, B \[RightArrow] D1; I0 \
+\[RightArrow] M1, I0 \[RightArrow] I0
+When normalizing, Pr(B \[RightArrow] M1) + Pr(B \[RightArrow] I0) + Pr(B \
+\[RightArrow] D1) should equal 1, and Pr(I0 \[RightArrow] M1) + Pr(I0 \
+\[RightArrow] I0) should equal 1.\
+\>", "Text",
+ CellChangeTimes->{{3.686928791066593*^9, 3.686928806890209*^9}, {
+  3.686928976433983*^9, 3.686928987137599*^9}, {3.6869290172725286`*^9, 
+  3.686929109302343*^9}, {3.6869398026858253`*^9, 
+  3.686939807331889*^9}},ExpressionUUID->"42362408-2866-44d1-8e60-\
+b5d48d12e1d7"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{1272, 761},
+WindowMargins->{{73, Automatic}, {Automatic, 0}},
+FrontEndVersion->"12.0 for Mac OS X x86 (64-bit) (April 8, 2019)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 168, 3, 69, "Chapter",ExpressionUUID->"15ee86dd-3198-403c-8faf-b5864dd7f525"],
+Cell[751, 27, 549, 10, 81, "Text",ExpressionUUID->"ef168f21-789e-4b75-800e-8d8dedff9d6d"],
+Cell[CellGroupData[{
+Cell[1325, 41, 165, 3, 67, "Section",ExpressionUUID->"5334efe8-f2c1-43ae-944a-9921714873fb"],
+Cell[1493, 46, 4252, 63, 1137, "Text",ExpressionUUID->"b5f17dc8-1bf0-4d0e-88a6-ba574ed40e32"],
+Cell[CellGroupData[{
+Cell[5770, 113, 230, 4, 54, "Subsection",ExpressionUUID->"1f78294c-0752-4958-a491-22198451f83b"],
+Cell[6003, 119, 1268, 21, 173, "Text",ExpressionUUID->"e39d249b-b749-4012-b111-752f1d9378b5"],
+Cell[CellGroupData[{
+Cell[7296, 144, 763, 20, 136, "Input",ExpressionUUID->"6dad5522-1872-4876-9f19-a084733ec3a1"],
+Cell[8062, 166, 337, 7, 24, "Message",ExpressionUUID->"da62a13b-a8ab-4877-9b46-b524a35a3ace"],
+Cell[8402, 175, 274, 7, 24, "Print",ExpressionUUID->"e12fd0bc-6de7-4cba-b3aa-64b2554fa33e"]
+}, Open  ]],
+Cell[8691, 185, 377, 7, 35, "Text",ExpressionUUID->"8fdc26fc-9e5d-407b-b84c-304af2e65f85"],
+Cell[CellGroupData[{
+Cell[9093, 196, 817, 21, 136, "Input",ExpressionUUID->"5dc2a534-e4fe-4eb7-b386-28d33dfec459"],
+Cell[9913, 219, 276, 7, 24, "Print",ExpressionUUID->"7434e709-5c38-42c6-bc7d-6f7d8f8c6568"]
+}, Open  ]],
+Cell[10204, 229, 680, 13, 81, "Text",ExpressionUUID->"42362408-2866-44d1-8e60-b5d48d12e1d7"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+}
+]
+*)
+

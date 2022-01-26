@@ -1,0 +1,1688 @@
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[         0,          0]
+NotebookDataLength[     65742,       1687]
+NotebookOptionsPosition[     56414,       1524]
+NotebookOutlinePosition[     56773,       1540]
+CellTagsIndexPosition[     56730,       1537]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["Modeling a system of repressors at steady state", "Title",
+ CellChangeTimes->{{3.6259309972506027`*^9, 
+  3.625931010323341*^9}},ExpressionUUID->"1332c813-6e2b-4c02-89aa-\
+92baec36312d"],
+
+Cell[CellGroupData[{
+
+Cell["Introduction", "Section",
+ CellChangeTimes->{{3.656786141973271*^9, 
+  3.65678614378062*^9}},ExpressionUUID->"2e7c6876-5e14-41a7-bf36-\
+638c74e520e1"],
+
+Cell["\<\
+The course notes developed a set of equations for a system of repressors and \
+target genes of the form\
+\>", "Text",
+ CellChangeTimes->{{3.6259310189553013`*^9, 3.625931044175891*^9}, {
+  3.625931140595663*^9, 
+  3.625931181969841*^9}},ExpressionUUID->"7d0d80dd-8a8e-419b-8a3e-\
+60da9d93951e"],
+
+Cell[BoxData[
+ FormBox[
+  RowBox[{
+   RowBox[{
+    RowBox[{
+     SubscriptBox["b", "i"], " ", 
+     SubscriptBox["m", "i"], " ", 
+     RowBox[{
+      UnderoverscriptBox["\[Product]", 
+       RowBox[{"j", "=", "1"}], "n"], 
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["m", "j"], " ", 
+         SubscriptBox["c", 
+          RowBox[{"j", ",", "i"}]]}], "+", "1"}], ")"}]}]}], "-", "1"}], "=", 
+   "0"}], TraditionalForm]], "DisplayFormulaNumbered",
+ CellChangeTimes->{{3.6259312481760807`*^9, 3.625931250041326*^9}, {
+  3.625931649859392*^9, 3.625931812562046*^9}, {3.625933937831955*^9, 
+  3.625934037650721*^9}, {3.625934073304557*^9, 3.625934155508279*^9}, {
+  3.625934324951394*^9, 3.6259343892580643`*^9}, {3.6259344382696123`*^9, 
+  3.625934438652637*^9}},ExpressionUUID->"adf86c42-ccaa-4f09-95c1-\
+af8f845b390f"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["m", "i"], TraditionalForm]],ExpressionUUID->
+  "496c69d8-8176-43c6-a3fc-e06f810493bd"],
+ " is the expression level of gene i in a particular experiment,  ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["b", "i"], TraditionalForm]],ExpressionUUID->
+  "646fce27-b016-4fbc-a77c-a933ae89b451"],
+ " is a constant related to the steady-state level of ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["m", "i"], TraditionalForm]],ExpressionUUID->
+  "dd1dc265-d696-4d34-a41a-785980d71159"],
+ " in the absence of any repressors, and ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["c", 
+    RowBox[{"j", ",", "i"}]], TraditionalForm]],
+  CellChangeTimes->{{3.6259312481760807`*^9, 3.625931250041326*^9}, {
+   3.625931649859392*^9, 3.625931812562046*^9}, {3.625933937831955*^9, 
+   3.625934037650721*^9}, {3.625934073304557*^9, 3.625934155508279*^9}, {
+   3.625934324951394*^9, 3.6259343892580643`*^9}, {3.6259344382696123`*^9, 
+   3.625934438652637*^9}},ExpressionUUID->
+  "f40f77d1-b521-4a5f-b6f2-ce7784ed6b13"],
+ " represents the strength of the repressor encoded by gene j on the \
+expression of gene i."
+}], "Text",
+ CellChangeTimes->{{3.6259344261056213`*^9, 3.625934642697969*^9}, 
+   3.625934713016675*^9},ExpressionUUID->"eafd5732-48fe-4452-9d0d-\
+25a685037d96"],
+
+Cell["\<\
+In this lab, you will write code that generates a set of random parameter \
+values for such a system, code that generates steady-state expression levels \
+consistent with a given set of parameter values, and code that infers the \
+values of parameters consistent with a set of measured mRNA levels. In all \
+cases, we will make the following assumptions:\
+\>", "Text",
+ CellChangeTimes->{{3.625934722932053*^9, 3.6259347975097303`*^9}, {
+  3.6259348309949093`*^9, 3.625934873056179*^9}, {3.625934910446247*^9, 
+  3.6259349193210983`*^9}},ExpressionUUID->"93e80e8f-865e-4409-b580-\
+2ad702525595"],
+
+Cell[CellGroupData[{
+
+Cell[TextData[{
+ "There is no direct autoregulation, so ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["c", 
+    RowBox[{"i", ",", "i"}]], TraditionalForm]],ExpressionUUID->
+  "91a29dc1-4c05-4030-8854-e418197a649c"],
+ "= 0 for all i."
+}], "Item",
+ CellChangeTimes->{{3.625935034125566*^9, 
+  3.62593509133565*^9}},ExpressionUUID->"d1a0a456-18d5-4645-aaac-\
+3a4ca3ab5caa"],
+
+Cell[TextData[{
+ "The maximum transcript levels (when no repression is in effect) are between \
+1 and 100,\ntherefore 1 > ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["b", "i"], TraditionalForm]],ExpressionUUID->
+  "2c1b1d3d-b184-44a0-83c2-36bd37392bf0"],
+ " > 0.01."
+}], "Item",
+ CellChangeTimes->{{3.625935034125566*^9, 3.6259350913331137`*^9}, {
+  3.625935123595057*^9, 
+  3.625935159859455*^9}},ExpressionUUID->"9a58f626-0521-40ec-9282-\
+cd6549ffd490"],
+
+Cell[TextData[{
+ "Each TF can repress transcription by a factor of no more than 101, \
+therefore ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["c", 
+    RowBox[{"j", ",", "i"}]], TraditionalForm]],
+  CellChangeTimes->{{3.6259312481760807`*^9, 3.625931250041326*^9}, {
+   3.625931649859392*^9, 3.625931812562046*^9}, {3.625933937831955*^9, 
+   3.625934037650721*^9}, {3.625934073304557*^9, 3.625934155508279*^9}, {
+   3.625934324951394*^9, 3.6259343892580643`*^9}, {3.6259344382696123`*^9, 
+   3.625934438652637*^9}},ExpressionUUID->
+  "b76a1d9f-7702-4b62-a94a-a6afe4c7d984"],
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["m", "j"], TraditionalForm]],
+  CellChangeTimes->{{3.6259312481760807`*^9, 3.625931250041326*^9}, {
+   3.625931649859392*^9, 3.625931812562046*^9}, {3.625933937831955*^9, 
+   3.625934037650721*^9}, {3.625934073304557*^9, 3.625934155508279*^9}, {
+   3.625934324951394*^9, 3.6259343892580643`*^9}, {3.6259344382696123`*^9, 
+   3.625934438652637*^9}},ExpressionUUID->
+  "23d7bc6a-1d6b-4b8d-a820-714cf03867f9"],
+ " <100. Since ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["m", "j"], TraditionalForm]],
+  CellChangeTimes->{{3.6259312481760807`*^9, 3.625931250041326*^9}, {
+   3.625931649859392*^9, 3.625931812562046*^9}, {3.625933937831955*^9, 
+   3.625934037650721*^9}, {3.625934073304557*^9, 3.625934155508279*^9}, {
+   3.625934324951394*^9, 3.6259343892580643`*^9}, {3.6259344382696123`*^9, 
+   3.625934438652637*^9}},ExpressionUUID->
+  "c86b9080-365c-47df-9468-171f69371615"],
+ " could be as large as 100, that implies 0 \[LessEqual]",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["c", 
+    RowBox[{"j", ",", "i"}]], TraditionalForm]],
+  CellChangeTimes->{{3.6259312481760807`*^9, 3.625931250041326*^9}, {
+   3.625931649859392*^9, 3.625931812562046*^9}, {3.625933937831955*^9, 
+   3.625934037650721*^9}, {3.625934073304557*^9, 3.625934155508279*^9}, {
+   3.625934324951394*^9, 3.6259343892580643`*^9}, {3.6259344382696123`*^9, 
+   3.625934438652637*^9}},ExpressionUUID->
+  "581e36a2-790e-40ca-8438-f29a82c0de96"],
+ "\[LessEqual]1."
+}], "Item",
+ CellChangeTimes->{{3.625935034125566*^9, 3.6259350913331137`*^9}, {
+  3.625935123595057*^9, 3.625935167380735*^9}, {3.625935200838788*^9, 
+  3.625935277612115*^9}, {3.6567622693592043`*^9, 
+  3.656762310879037*^9}},ExpressionUUID->"3742971e-06c2-41a2-aeeb-\
+70549b40bcf9"]
+}, Open  ]],
+
+Cell["\<\
+All code should be written in the templates in the accompanying .m file. Unit \
+tests are provided in the test notebook.\
+\>", "Text",
+ CellChangeTimes->{{3.656786708785013*^9, 
+  3.656786742283977*^9}},ExpressionUUID->"50c91cb9-3458-478f-912f-\
+5e9dfd63b681"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Assignment", "Section",
+ CellChangeTimes->{{3.656786170254689*^9, 
+  3.6567861756948957`*^9}},ExpressionUUID->"d612d990-9f5b-410f-9c60-\
+162c9a39668a"],
+
+Cell[CellGroupData[{
+
+Cell["Part 1: Generating random parameter sets", "Subsection",
+ CellGroupingRules->{"SectionGrouping", Inherited},
+ CellChangeTimes->{{3.595175483007051*^9, 3.59517550277838*^9}, {
+  3.625935303106802*^9, 
+  3.625935304790579*^9}},ExpressionUUID->"067f99d6-261c-4b4f-99ba-\
+eedc43544102"],
+
+Cell["\<\
+In the accompanying .m file, write a function that generates random \
+parameters for a system of repressors. The output should be a list containing \
+a vector of b parameters and a matrix of c parameters. The input should be a \
+vector with 1s for genes that are regulators and 0s for genes that are not, \
+and a random seed:\
+\>", "Text",
+ CellChangeTimes->{{3.595175048658309*^9, 3.5951752748819017`*^9}, {
+  3.625832274171221*^9, 3.6258322750484943`*^9}, {3.625935320589553*^9, 
+  3.625935395834889*^9}, {3.6567846156660624`*^9, 3.656784618319228*^9}, {
+  3.6567859874250174`*^9, 
+  3.656785993282449*^9}},ExpressionUUID->"90463204-69d0-4bfa-ada5-\
+5f4d143dc49d"],
+
+Cell[BoxData[
+ RowBox[{"generateRandomParams", "[", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"1", ",", "1", ",", "0"}], "}"}], ",", "157"}], "]"}]], "Input",
+ CellChangeTimes->{{3.656784925219293*^9, 
+  3.656784945265614*^9}},ExpressionUUID->"7bb0144c-5bcb-457e-b0cf-\
+59c76b2d8867"],
+
+Cell[TextData[{
+ "The random seed ensures that you can run the random parameter generation as \
+many times as you want and always get the same result. See the documentation \
+on ",
+ StyleBox["SeedRandom",
+  FontFamily->"Courier",
+  FontWeight->"Bold"],
+ ". The return value should be a list of the form"
+}], "Text",
+ CellChangeTimes->{{3.595175284073886*^9, 3.595175305313265*^9}, {
+  3.6259354072800303`*^9, 3.625935451043889*^9}, {3.689351315987732*^9, 
+  3.689351316267734*^9}},ExpressionUUID->"f460d3d8-4763-4966-b1f0-\
+df14b58a5896"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"bVector", ",", " ", "cMatrix"}], "}"}]], "Input",
+ CellChangeTimes->{{3.595175310248102*^9, 
+  3.595175324516747*^9}},ExpressionUUID->"4ec1940a-242f-43a6-8c8b-\
+8190b3176334"],
+
+Cell[TextData[{
+ "Each row of ",
+ StyleBox["cMatrix",
+  FontFamily->"Courier",
+  FontWeight->"Bold"],
+ " should describe the effects of a single regulator on all its target genes. "
+}], "Text",
+ CellChangeTimes->{{3.595175333299942*^9, 3.595175395362059*^9}, {
+   3.6254937208766603`*^9, 3.625493756640967*^9}, {3.625935515727764*^9, 
+   3.625935525470133*^9}, 
+   3.625935562859105*^9},ExpressionUUID->"11bcdcc9-8b58-4b79-b9a5-\
+280592df0ab7"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"params", "=", 
+   RowBox[{"generateRandomParams", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"1", ",", "1", ",", "0"}], "}"}], ",", "157"}], "]"}]}], 
+  ";"}]], "Input",
+ CellChangeTimes->{{3.595177580705599*^9, 3.5951776299229794`*^9}, {
+   3.625441383341663*^9, 3.625441384016881*^9}, {3.625935602885933*^9, 
+   3.625935603234974*^9}, 3.656784913260888*^9, 3.6567849712557297`*^9, 
+   3.656785079906798*^9},ExpressionUUID->"53c85ba0-5411-4c24-9df3-\
+be5fde9869cf"],
+
+Cell["Let\[CloseCurlyQuote]s look vector of b parameters.", "Text",
+ CellChangeTimes->{{3.6567851726202793`*^9, 
+  3.656785182107586*^9}},ExpressionUUID->"c6d006a2-bc29-431e-b8a7-\
+71ae13c2a2e6"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"params", "[", 
+   RowBox[{"[", "1", "]"}], "]"}], " "}]], "Input",
+ CellChangeTimes->{{3.6567850842614*^9, 
+  3.65678508911489*^9}},ExpressionUUID->"01665833-1b88-4f63-97b8-\
+5c388f74a459"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+  "0.20112397397903115`", ",", "0.38909776953269826`", ",", 
+   "0.2644249435483068`"}], "}"}]], "Output",
+ CellChangeTimes->{3.656785094780983*^9, 
+  3.65686018230947*^9},ExpressionUUID->"51d30638-7a59-4a1a-8702-ae3cadcf6d05"]
+}, Open  ]],
+
+Cell["\<\
+Notice that they are all between 0.01 and 1. Here are the C parameters.\
+\>", "Text",
+ CellChangeTimes->{{3.656785113541861*^9, 3.656785127118495*^9}, {
+  3.656785162970667*^9, 
+  3.6567852162866793`*^9}},ExpressionUUID->"706dd4aa-6474-4e62-a45a-\
+85aa710b6559"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"params", "[", 
+   RowBox[{"[", "2", "]"}], "]"}], " ", "//", "MatrixForm"}]], "Input",
+ CellChangeTimes->{{3.6567850842614*^9, 3.65678508911489*^9}, {
+  3.656785228481719*^9, 
+  3.656785243344112*^9}},ExpressionUUID->"bbc379b9-e2d4-4a02-b773-\
+bacec4f0cfb7"],
+
+Cell[BoxData[
+ TagBox[
+  RowBox[{"(", "\[NoBreak]", GridBox[{
+     {"0.`", "0.08134932066015965`", "0.42087980612229337`"},
+     {"0.4414073585086542`", "0.`", "0.9826386728491858`"},
+     {"0.`", "0.`", "0.`"}
+    },
+    GridBoxAlignment->{
+     "Columns" -> {{Center}}, "ColumnsIndexed" -> {}, "Rows" -> {{Baseline}}, 
+      "RowsIndexed" -> {}},
+    GridBoxSpacings->{"Columns" -> {
+        Offset[0.27999999999999997`], {
+         Offset[0.7]}, 
+        Offset[0.27999999999999997`]}, "ColumnsIndexed" -> {}, "Rows" -> {
+        Offset[0.2], {
+         Offset[0.4]}, 
+        Offset[0.2]}, "RowsIndexed" -> {}}], "\[NoBreak]", ")"}],
+  Function[BoxForm`e$, 
+   MatrixForm[BoxForm`e$]]]], "Output",
+ CellChangeTimes->{3.6567852440702677`*^9, 
+  3.656860190380485*^9},ExpressionUUID->"c4835d4d-070b-4abc-bfbc-\
+60c3d00bcb5c"]
+}, Open  ]],
+
+Cell[TextData[{
+ "Notice that the diagonal is zero because we are disallowing auto regulation \
+in our model and the bottom row is all zeros because the regulators mask in \
+the input is ",
+ StyleBox["{1,1,0}",
+  FontFamily->"Courier",
+  FontWeight->"Bold"],
+ ", indicated that the third gene does not encode a regulator."
+}], "Text",
+ CellChangeTimes->{{3.6567852509704933`*^9, 3.656785329688871*^9}, {
+  3.656785360620571*^9, 3.656785363652238*^9}, {3.689351358947502*^9, 
+  3.6893513595276814`*^9}},ExpressionUUID->"7851073d-364f-481c-a4f6-\
+6030119d514c"],
+
+Cell["\<\
+The number of genes in the system is not an explicit input because it can be \
+inferred from the length of the regulators mask.\
+\>", "Text",
+ CellChangeTimes->{{3.625935761165742*^9, 3.6259357910323*^9}, {
+  3.6567853453422956`*^9, 3.656785351291048*^9}, {3.6567854018796463`*^9, 
+  3.656785403735745*^9}},ExpressionUUID->"778aa007-a8fc-4e67-b3fc-\
+71847d138ef3"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["\<\
+Part 2: Generating equations, given parameters and a genotype\
+\>", "Subsection",
+ CellChangeTimes->{{3.595175483007051*^9, 3.59517550277838*^9}, {
+  3.595175534972789*^9, 3.595175553042061*^9}, {3.5951758845539217`*^9, 
+  3.595175886065763*^9}, {3.625935831173214*^9, 
+  3.625935833208455*^9}},ExpressionUUID->"c0f5f644-118f-448a-952a-\
+fbf2ffa83bb5"],
+
+Cell[CellGroupData[{
+
+Cell["Generic equations", "Subsubsection",
+ CellChangeTimes->{{3.656786199043435*^9, 
+  3.6567862018177147`*^9}},ExpressionUUID->"77ddedc4-9b73-474b-baf5-\
+21822087e490"],
+
+Cell[TextData[{
+ "In the accompanying .m file, write a function that generates a set of \
+symbolic equations governing the steady state of a system in which variable \
+",
+ StyleBox["m[i]",
+  FontFamily->"Courier",
+  FontWeight->"Bold"],
+ " represents the expression level of gene i and ",
+ StyleBox["b[i]",
+  FontFamily->"Courier",
+  FontWeight->"Bold"],
+ " and ",
+ StyleBox["c[j,i]",
+  FontFamily->"Courier",
+  FontWeight->"Bold"],
+ " represent the parameters. The auto regulation parameters, ",
+ StyleBox["c[i,i]",
+  FontFamily->"Courier",
+  FontWeight->"Bold"],
+ ", should be zero. Note that both the expression levels and the parameters \
+are indexed variables here, not vectors or matrices. Numbers will be \
+substituted in for some variables later.  The reason for constructing generic \
+equations is that we can either supply the parameter values and ask for the \
+expression levels or supply the expression levels and ask for the parameter \
+values.\n\nThe  argument to ",
+ StyleBox["mutantEqns",
+  FontFamily->"Courier",
+  FontWeight->"Bold"],
+ " is a gene presences mask which describes the genotype of the strain. It \
+should be a vector with a 0 in position i if gene i has been deleted in the \
+strain described by the equations and a 1 in position i if gene i has not \
+been deleted. For example:"
+}], "Text",
+ CellChangeTimes->{{3.595175896298009*^9, 3.595175944345538*^9}, {
+   3.595175977941637*^9, 3.595176102113811*^9}, {3.595259478204768*^9, 
+   3.595259558769668*^9}, {3.595261051778121*^9, 3.595261080761181*^9}, 
+   3.59526132790123*^9, {3.625491190586059*^9, 3.625491256519431*^9}, {
+   3.625491289418466*^9, 3.625491375904065*^9}, {3.625491406378582*^9, 
+   3.6254915041239347`*^9}, {3.625491575620965*^9, 3.625491585736915*^9}, {
+   3.6254916285673513`*^9, 3.625491630743071*^9}, {3.625491669436454*^9, 
+   3.625491692612599*^9}, {3.6259358537286253`*^9, 3.625935861156024*^9}, {
+   3.656763224230281*^9, 3.65676329318064*^9}, {3.656785702526208*^9, 
+   3.656785705588738*^9}, {3.656786019796574*^9, 3.656786027922596*^9}, {
+   3.656787846300722*^9, 3.656787928417912*^9}, 
+   3.6893513093591833`*^9},ExpressionUUID->"e29b0b10-5212-4c06-b57b-\
+eb8127d89bbb"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"eqnsAll", "=", 
+   RowBox[{"mutantEqns", "[", 
+    RowBox[{"{", 
+     RowBox[{"1", ",", "1", ",", "1"}], "}"}], "]"}]}], ";", 
+  RowBox[{"eqnsAll", "//", "MatrixForm"}]}]], "Input",
+ CellChangeTimes->{{3.595177679547682*^9, 3.595177703674652*^9}, {
+  3.5952614541277246`*^9, 3.595261460500236*^9}, {3.625444535482326*^9, 
+  3.625444536899158*^9}, {3.625444579059864*^9, 3.625444585917076*^9}, {
+  3.625491060612464*^9, 3.625491061116082*^9}, {3.625491545778778*^9, 
+  3.625491549244438*^9}, {3.62549164001875*^9, 3.625491641036481*^9}, {
+  3.625491718733715*^9, 3.625491719135152*^9}, {3.656785769491438*^9, 
+  3.656785788309244*^9}},ExpressionUUID->"d6999938-12f4-42c0-b99f-\
+1195897abbfb"],
+
+Cell[BoxData[
+ TagBox[
+  RowBox[{"(", "\[NoBreak]", 
+   TagBox[GridBox[{
+      {
+       RowBox[{
+        RowBox[{
+         RowBox[{"-", "1.`"}], "+", 
+         RowBox[{
+          RowBox[{"b", "[", "1", "]"}], " ", 
+          RowBox[{"m", "[", "1", "]"}], " ", 
+          RowBox[{"(", 
+           RowBox[{"1", "+", 
+            RowBox[{
+             RowBox[{"c", "[", 
+              RowBox[{"2", ",", "1"}], "]"}], " ", 
+             RowBox[{"m", "[", "2", "]"}]}]}], ")"}], " ", 
+          RowBox[{"(", 
+           RowBox[{"1", "+", 
+            RowBox[{
+             RowBox[{"c", "[", 
+              RowBox[{"3", ",", "1"}], "]"}], " ", 
+             RowBox[{"m", "[", "3", "]"}]}]}], ")"}]}]}], "\[Equal]", "0"}]},
+      {
+       RowBox[{
+        RowBox[{
+         RowBox[{"-", "1.`"}], "+", 
+         RowBox[{
+          RowBox[{"b", "[", "2", "]"}], " ", 
+          RowBox[{"(", 
+           RowBox[{"1", "+", 
+            RowBox[{
+             RowBox[{"c", "[", 
+              RowBox[{"1", ",", "2"}], "]"}], " ", 
+             RowBox[{"m", "[", "1", "]"}]}]}], ")"}], " ", 
+          RowBox[{"m", "[", "2", "]"}], " ", 
+          RowBox[{"(", 
+           RowBox[{"1", "+", 
+            RowBox[{
+             RowBox[{"c", "[", 
+              RowBox[{"3", ",", "2"}], "]"}], " ", 
+             RowBox[{"m", "[", "3", "]"}]}]}], ")"}]}]}], "\[Equal]", "0"}]},
+      {
+       RowBox[{
+        RowBox[{
+         RowBox[{"-", "1.`"}], "+", 
+         RowBox[{
+          RowBox[{"b", "[", "3", "]"}], " ", 
+          RowBox[{"(", 
+           RowBox[{"1", "+", 
+            RowBox[{
+             RowBox[{"c", "[", 
+              RowBox[{"1", ",", "3"}], "]"}], " ", 
+             RowBox[{"m", "[", "1", "]"}]}]}], ")"}], " ", 
+          RowBox[{"(", 
+           RowBox[{"1", "+", 
+            RowBox[{
+             RowBox[{"c", "[", 
+              RowBox[{"2", ",", "3"}], "]"}], " ", 
+             RowBox[{"m", "[", "2", "]"}]}]}], ")"}], " ", 
+          RowBox[{"m", "[", "3", "]"}]}]}], "\[Equal]", "0"}]}
+     },
+     GridBoxAlignment->{
+      "Columns" -> {{Center}}, "ColumnsIndexed" -> {}, "Rows" -> {{Baseline}},
+        "RowsIndexed" -> {}},
+     GridBoxSpacings->{"Columns" -> {
+         Offset[0.27999999999999997`], {
+          Offset[0.5599999999999999]}, 
+         Offset[0.27999999999999997`]}, "ColumnsIndexed" -> {}, "Rows" -> {
+         Offset[0.2], {
+          Offset[0.4]}, 
+         Offset[0.2]}, "RowsIndexed" -> {}}],
+    Column], "\[NoBreak]", ")"}],
+  Function[BoxForm`e$, 
+   MatrixForm[BoxForm`e$]]]], "Output",
+ CellChangeTimes->{3.595177705043107*^9, 3.595178249586171*^9, 
+  3.5952449472633877`*^9, 3.595261462269225*^9, 3.5952616057194366`*^9, 
+  3.595262005293407*^9, 3.595262100942953*^9, 3.625444537822859*^9, 
+  3.6254445866094713`*^9, 3.625491066721655*^9, 3.62549154999349*^9, 
+  3.6254916423247232`*^9, 3.6254917228746223`*^9, 3.656785733258438*^9, 
+  3.656785790370902*^9},ExpressionUUID->"e8dd065a-08ab-4dd0-ab48-\
+74d31b56dba5"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"eqnsNshit", " ", "=", " ", 
+   RowBox[{"genericEqns", "[", "3", "]"}]}], ";", 
+  RowBox[{"eqnsNshit", "//", "MatrixForm"}]}]], "Input",
+ CellChangeTimes->{{3.7840733156827517`*^9, 3.7840733242163267`*^9}, {
+  3.7840734191419697`*^9, 3.7840734206864023`*^9}, {3.7840734517595377`*^9, 
+  3.784073452344842*^9}, {3.784074166775361*^9, 3.784074167364237*^9}},
+ CellLabel->
+  "In[116]:=",ExpressionUUID->"a1389c26-56e4-42bc-99da-9a0e2bec1378"],
+
+Cell[BoxData[
+ TagBox[
+  RowBox[{"(", "\[NoBreak]", 
+   TagBox[GridBox[{
+      {
+       RowBox[{
+        RowBox[{
+         RowBox[{"-", "1.`"}], "+", 
+         RowBox[{
+          RowBox[{"b", "[", "1", "]"}], " ", 
+          RowBox[{"m", "[", "1", "]"}], " ", 
+          RowBox[{"(", 
+           RowBox[{"1", "+", 
+            RowBox[{
+             RowBox[{"c", "[", 
+              RowBox[{"2", ",", "1"}], "]"}], " ", 
+             RowBox[{"m", "[", "2", "]"}]}]}], ")"}], " ", 
+          RowBox[{"(", 
+           RowBox[{"1", "+", 
+            RowBox[{
+             RowBox[{"c", "[", 
+              RowBox[{"3", ",", "1"}], "]"}], " ", 
+             RowBox[{"m", "[", "3", "]"}]}]}], ")"}]}]}], "\[Equal]", "0"}]},
+      {
+       RowBox[{
+        RowBox[{
+         RowBox[{"-", "1.`"}], "+", 
+         RowBox[{
+          RowBox[{"b", "[", "2", "]"}], " ", 
+          RowBox[{"(", 
+           RowBox[{"1", "+", 
+            RowBox[{
+             RowBox[{"c", "[", 
+              RowBox[{"1", ",", "2"}], "]"}], " ", 
+             RowBox[{"m", "[", "1", "]"}]}]}], ")"}], " ", 
+          RowBox[{"m", "[", "2", "]"}], " ", 
+          RowBox[{"(", 
+           RowBox[{"1", "+", 
+            RowBox[{
+             RowBox[{"c", "[", 
+              RowBox[{"3", ",", "2"}], "]"}], " ", 
+             RowBox[{"m", "[", "3", "]"}]}]}], ")"}]}]}], "\[Equal]", "0"}]},
+      {
+       RowBox[{
+        RowBox[{
+         RowBox[{"-", "1.`"}], "+", 
+         RowBox[{
+          RowBox[{"b", "[", "3", "]"}], " ", 
+          RowBox[{"(", 
+           RowBox[{"1", "+", 
+            RowBox[{
+             RowBox[{"c", "[", 
+              RowBox[{"1", ",", "3"}], "]"}], " ", 
+             RowBox[{"m", "[", "1", "]"}]}]}], ")"}], " ", 
+          RowBox[{"(", 
+           RowBox[{"1", "+", 
+            RowBox[{
+             RowBox[{"c", "[", 
+              RowBox[{"2", ",", "3"}], "]"}], " ", 
+             RowBox[{"m", "[", "2", "]"}]}]}], ")"}], " ", 
+          RowBox[{"m", "[", "3", "]"}]}]}], "\[Equal]", "0"}]}
+     },
+     GridBoxAlignment->{"Columns" -> {{Center}}, "Rows" -> {{Baseline}}},
+     GridBoxSpacings->{"Columns" -> {
+         Offset[0.27999999999999997`], {
+          Offset[0.5599999999999999]}, 
+         Offset[0.27999999999999997`]}, "Rows" -> {
+         Offset[0.2], {
+          Offset[0.4]}, 
+         Offset[0.2]}}],
+    Column], "\[NoBreak]", ")"}],
+  Function[BoxForm`e$, 
+   MatrixForm[BoxForm`e$]]]], "Output",
+ CellChangeTimes->{{3.784073325325387*^9, 3.784073345275738*^9}, {
+   3.7840734083948317`*^9, 3.784073452716957*^9}, 3.78407349113267*^9, 
+   3.784073673482284*^9, {3.784073870338162*^9, 3.784073991503704*^9}, 
+   3.784074035088709*^9, 3.784074088962283*^9, {3.784074149701976*^9, 
+   3.784074184308133*^9}},
+ CellLabel->
+  "Out[116]//MatrixForm=",ExpressionUUID->"9b520e83-897f-4b86-b9bd-\
+637bf4b694f3"]
+}, Open  ]],
+
+Cell["\<\
+If the gene presence mask indicates that a gene has been deleted, the \
+equation for the expression of that gene will not be included in the \
+equations and the expression level of that gene will be set to zero in \
+equations governing the expressions of other genes:\
+\>", "Text",
+ CellChangeTimes->{{3.595261634612455*^9, 3.5952616891781178`*^9}, {
+  3.625935965979416*^9, 
+  3.625936002684574*^9}},ExpressionUUID->"ec7ff5a7-7866-4a8a-bd9c-\
+e9ab55ca1f09"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"eqnsDelta2", "=", 
+   RowBox[{"mutantEqns", "[", 
+    RowBox[{"{", 
+     RowBox[{"1", ",", "0", ",", "1"}], "}"}], "]"}]}], ";", 
+  RowBox[{"eqnsDelta1", " ", "//", "MatrixForm"}]}]], "Input",
+ CellChangeTimes->{{3.595261793508234*^9, 3.595261793916068*^9}, {
+   3.5952620093706427`*^9, 3.595262012203771*^9}, {3.595262108443681*^9, 
+   3.595262108756212*^9}, {3.625491732394787*^9, 3.625491748209651*^9}, 
+   3.6254920655490627`*^9, {3.6567858466271677`*^9, 3.656785866304139*^9}, {
+   3.656786472283997*^9, 3.656786472714732*^9}, {3.7840741916645117`*^9, 
+   3.784074191775363*^9}},
+ CellLabel->"",ExpressionUUID->"cc29ca3e-ced1-4bfa-b1d6-96e69f951cc6"],
+
+Cell[BoxData[
+ TagBox[
+  RowBox[{"(", "\[NoBreak]", 
+   TagBox[GridBox[{
+      {
+       RowBox[{
+        RowBox[{
+         RowBox[{"-", "1.`"}], "+", 
+         RowBox[{
+          RowBox[{"b", "[", "1", "]"}], " ", 
+          RowBox[{"m", "[", "1", "]"}], " ", 
+          RowBox[{"(", 
+           RowBox[{"1", "+", 
+            RowBox[{
+             RowBox[{"c", "[", 
+              RowBox[{"3", ",", "1"}], "]"}], " ", 
+             RowBox[{"m", "[", "3", "]"}]}]}], ")"}]}]}], "\[Equal]", "0"}]},
+      {
+       RowBox[{
+        RowBox[{
+         RowBox[{"-", "1.`"}], "+", 
+         RowBox[{
+          RowBox[{"b", "[", "3", "]"}], " ", 
+          RowBox[{"(", 
+           RowBox[{"1", "+", 
+            RowBox[{
+             RowBox[{"c", "[", 
+              RowBox[{"1", ",", "3"}], "]"}], " ", 
+             RowBox[{"m", "[", "1", "]"}]}]}], ")"}], " ", 
+          RowBox[{"m", "[", "3", "]"}]}]}], "\[Equal]", "0"}]}
+     },
+     GridBoxAlignment->{
+      "Columns" -> {{Center}}, "ColumnsIndexed" -> {}, "Rows" -> {{Baseline}},
+        "RowsIndexed" -> {}},
+     GridBoxSpacings->{"Columns" -> {
+         Offset[0.27999999999999997`], {
+          Offset[0.5599999999999999]}, 
+         Offset[0.27999999999999997`]}, "ColumnsIndexed" -> {}, "Rows" -> {
+         Offset[0.2], {
+          Offset[0.4]}, 
+         Offset[0.2]}, "RowsIndexed" -> {}}],
+    Column], "\[NoBreak]", ")"}],
+  Function[BoxForm`e$, 
+   MatrixForm[BoxForm`e$]]]], "Output",
+ CellChangeTimes->{
+  3.595261794727263*^9, 3.595262013058077*^9, 3.595262111246895*^9, 
+   3.6254917488171053`*^9, 3.625492066364818*^9, 3.656785757566078*^9, {
+   3.656785853928658*^9, 3.656785866982065*^9}, 
+   3.656786474572073*^9},ExpressionUUID->"76561887-655b-44dd-8939-\
+e111c85d757f"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"eqnsDelta", " ", "=", " ", 
+   RowBox[{"mutantEqns", "[", 
+    RowBox[{"{", 
+     RowBox[{"1", ",", "0", ",", "1"}], "}"}], "]"}]}], ";", 
+  RowBox[{"eqnsDelta", " ", "//", "MatrixForm"}]}]], "Input",
+ CellChangeTimes->{{3.7840742033237677`*^9, 3.784074216048695*^9}},
+ CellLabel->
+  "In[120]:=",ExpressionUUID->"85c293e1-f5cd-413e-af0d-50c85db4918b"],
+
+Cell[BoxData[
+ TagBox[
+  RowBox[{"(", "\[NoBreak]", 
+   TagBox[GridBox[{
+      {
+       RowBox[{
+        RowBox[{
+         RowBox[{"-", "1.`"}], "+", 
+         RowBox[{
+          RowBox[{"b", "[", "1", "]"}], " ", 
+          RowBox[{"m", "[", "1", "]"}], " ", 
+          RowBox[{"(", 
+           RowBox[{"1", "+", 
+            RowBox[{
+             RowBox[{"c", "[", 
+              RowBox[{"3", ",", "1"}], "]"}], " ", 
+             RowBox[{"m", "[", "3", "]"}]}]}], ")"}]}]}], "\[Equal]", "0"}]},
+      {
+       RowBox[{
+        RowBox[{
+         RowBox[{"-", "1.`"}], "+", 
+         RowBox[{
+          RowBox[{"b", "[", "3", "]"}], " ", 
+          RowBox[{"(", 
+           RowBox[{"1", "+", 
+            RowBox[{
+             RowBox[{"c", "[", 
+              RowBox[{"1", ",", "3"}], "]"}], " ", 
+             RowBox[{"m", "[", "1", "]"}]}]}], ")"}], " ", 
+          RowBox[{"m", "[", "3", "]"}]}]}], "\[Equal]", "0"}]}
+     },
+     GridBoxAlignment->{"Columns" -> {{Center}}, "Rows" -> {{Baseline}}},
+     GridBoxSpacings->{"Columns" -> {
+         Offset[0.27999999999999997`], {
+          Offset[0.5599999999999999]}, 
+         Offset[0.27999999999999997`]}, "Rows" -> {
+         Offset[0.2], {
+          Offset[0.4]}, 
+         Offset[0.2]}}],
+    Column], "\[NoBreak]", ")"}],
+  Function[BoxForm`e$, 
+   MatrixForm[BoxForm`e$]]]], "Output",
+ CellChangeTimes->{{3.784074213533786*^9, 3.7840742163407707`*^9}},
+ CellLabel->
+  "Out[120]//MatrixForm=",ExpressionUUID->"35c9631d-f0c2-4ba7-bbba-\
+827d6c078a7e"]
+}, Open  ]],
+
+Cell[TextData[{
+ "Notice how neither ",
+ StyleBox["b[2]",
+  FontFamily->"Courier",
+  FontWeight->"Bold"],
+ " nor ",
+ StyleBox["m[2]",
+  FontFamily->"Courier",
+  FontWeight->"Bold"],
+ " appears in any of the equations, nor ",
+ StyleBox["c[2,i]",
+  FontFamily->"Courier",
+  FontWeight->"Bold"],
+ " for any",
+ StyleBox[" i",
+  FontFamily->"Courier",
+  FontWeight->"Bold"],
+ "."
+}], "Text",
+ CellChangeTimes->{{3.656785891550672*^9, 
+  3.656785950730441*^9}},ExpressionUUID->"3622c333-02e8-41e4-8b5e-\
+b0507e2ddfa7"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["\<\
+Equations with known parameter values but unknown expression levels\
+\>", "Subsubsection",
+ CellChangeTimes->{{3.656786229581727*^9, 
+  3.6567862499823513`*^9}},ExpressionUUID->"2f898237-46a1-415c-9784-\
+769b5cf21490"],
+
+Cell["\<\
+In the accompanying .m file, write a function that replaces the symbolic \
+parameters in a set of equations with specified numeric parameters, as in:\
+\>", "Text",
+ CellChangeTimes->{{3.625491902238737*^9, 3.625492026439081*^9}, {
+   3.625936072984044*^9, 3.625936077028714*^9}, 3.656786311582837*^9, {
+   3.689351598873837*^9, 
+   3.689351599888769*^9}},ExpressionUUID->"491b094f-a13a-4234-87fa-\
+5dfc37064b0c"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"exprEqnsDelta2", "=", 
+   RowBox[{"expressionEqns", "[", 
+    RowBox[{"eqnsDelta2", ",", " ", "params"}], "]"}]}], ";", 
+  RowBox[{"exprEqnsDelta2", "//", "MatrixForm"}]}]], "Input",
+ CellChangeTimes->{{3.625492027589253*^9, 3.6254920820039682`*^9}, {
+  3.656786448825323*^9, 3.6567865036624823`*^9}, {3.656787613838778*^9, 
+  3.656787616149135*^9}},ExpressionUUID->"ae5f4891-c447-4e83-907b-\
+b06f3eccc334"],
+
+Cell[BoxData[
+ TagBox[
+  RowBox[{"(", "\[NoBreak]", 
+   TagBox[GridBox[{
+      {
+       RowBox[{
+        RowBox[{
+         RowBox[{"-", "1.`"}], "+", 
+         RowBox[{"0.20112397397903115`", " ", 
+          RowBox[{"m", "[", "1", "]"}]}]}], "\[Equal]", "0"}]},
+      {
+       RowBox[{
+        RowBox[{
+         RowBox[{"-", "1.`"}], "+", 
+         RowBox[{"0.2644249435483068`", " ", 
+          RowBox[{"(", 
+           RowBox[{"1", "+", 
+            RowBox[{"0.42087980612229337`", " ", 
+             RowBox[{"m", "[", "1", "]"}]}]}], ")"}], " ", 
+          RowBox[{"m", "[", "3", "]"}]}]}], "\[Equal]", "0"}]}
+     },
+     GridBoxAlignment->{
+      "Columns" -> {{Center}}, "ColumnsIndexed" -> {}, "Rows" -> {{Baseline}},
+        "RowsIndexed" -> {}},
+     GridBoxSpacings->{"Columns" -> {
+         Offset[0.27999999999999997`], {
+          Offset[0.5599999999999999]}, 
+         Offset[0.27999999999999997`]}, "ColumnsIndexed" -> {}, "Rows" -> {
+         Offset[0.2], {
+          Offset[0.4]}, 
+         Offset[0.2]}, "RowsIndexed" -> {}}],
+    Column], "\[NoBreak]", ")"}],
+  Function[BoxForm`e$, 
+   MatrixForm[BoxForm`e$]]]], "Output",
+ CellChangeTimes->{
+  3.625492085018911*^9, {3.656786485670648*^9, 3.656786505535507*^9}, 
+   3.6567876210401373`*^9},ExpressionUUID->"567ae8f4-48d2-422e-ae62-\
+5130e2a0b500"]
+}, Open  ]],
+
+Cell[TextData[{
+ "The parameters in the input to ",
+ StyleBox["expressionEqns",
+  FontFamily->"Courier",
+  FontWeight->"Bold"],
+ " are in exactly the same form as the output from your random parameter \
+generator."
+}], "Text",
+ CellChangeTimes->{{3.625492094112092*^9, 3.625492116750175*^9}, {
+  3.6567865755085363`*^9, 
+  3.656786602612117*^9}},ExpressionUUID->"089d1788-323c-4094-a154-\
+09dbf5d8ec00"],
+
+Cell["\<\
+To solve for the gene expression levels in a mutant you need the list of \
+variables to solve for. In the accompanying .m file, write a function that \
+takes in the gene presence mask and returns all the expression level \
+variables for non-deleted genes.\
+\>", "Text",
+ CellChangeTimes->{{3.6254918211616087`*^9, 3.625491871097416*^9}, {
+  3.65676339818071*^9, 3.656763398387753*^9}, {3.65678625589554*^9, 
+  3.656786261383122*^9}, {3.656786404158643*^9, 3.656786410317176*^9}, {
+  3.689351679505167*^9, 
+  3.689351679950201*^9}},ExpressionUUID->"97f45164-afe8-48b5-97ba-\
+5b2fa917d876"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"mutantExpVars", "[", 
+  RowBox[{"{", 
+   RowBox[{"1", ",", " ", "0", ",", "1"}], "}"}], "]"}]], "Input",
+ CellChangeTimes->{{3.625491888377983*^9, 3.625491898804669*^9}},
+ CellLabel->
+  "In[121]:=",ExpressionUUID->"fb394d95-c230-438c-9a1b-1fe85774044e"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"m", "[", "1", "]"}], ",", 
+   RowBox[{"m", "[", "3", "]"}]}], "}"}]], "Output",
+ CellChangeTimes->{3.62549189989219*^9, 3.656786655808167*^9, 
+  3.78407451724794*^9},
+ CellLabel->
+  "Out[121]=",ExpressionUUID->"d90ad315-6e4f-4d8e-91ff-9943ef3c8165"]
+}, Open  ]],
+
+Cell["\<\
+Some unit tests are given in the accompanying test file, although you may get \
+different results for anything that\[CloseCurlyQuote]s randomly generated, \
+even if you use the same seed I did.\
+\>", "Text",
+ CellChangeTimes->{{3.625938001565173*^9, 3.625938039110271*^9}, {
+  3.656763503775577*^9, 
+  3.656763504950294*^9}},ExpressionUUID->"3cf86932-978c-436c-b1e5-\
+014f566c795f"]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["\<\
+Part 3: Generating expression data sets, given parameters and a genotype\
+\>", "Subsection",
+ CellChangeTimes->{{3.595175483007051*^9, 3.59517550277838*^9}, {
+  3.595175534972789*^9, 3.595175553042061*^9}, {3.625937979065731*^9, 
+  3.6259379804488287`*^9}},ExpressionUUID->"9a984f0a-9af8-4253-8f7e-\
+4e61ec7639d8"],
+
+Cell["\<\
+In the accompanying .m file, write a function that takes in one set of \
+equations (with specific parameter values but variables for expression \
+levels) and a list of genotypes (i.e. gene presence masks) and generates gene \
+expression levels for each genotype that satisfy the equations. It should \
+return a matrix in which each row represents the expression profile of one \
+genotype and each column represents the expression of a particular gene. The \
+expression profile in each row should be consistent with both the equations \
+and the genotype. The expression levels of genes that are deleted in a given \
+strain should be exactly zero.\
+\>", "Text",
+ CellChangeTimes->{{3.625492136820674*^9, 3.625492277508978*^9}, {
+  3.6254929621598473`*^9, 3.6254930610673847`*^9}, {3.625493101616076*^9, 
+  3.625493181643236*^9}, {3.6259384428629417`*^9, 3.625938447836872*^9}, {
+  3.656787560834236*^9, 3.656787561039403*^9}, {3.656788787731176*^9, 
+  3.65678894766469*^9}, {3.656788978699682*^9, 
+  3.65678903444042*^9}},ExpressionUUID->"9d50c854-74e2-45a1-9d05-\
+a6051013ef78"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"expressionEqns", "[", 
+  RowBox[{"eqnsDelta", ",", "params"}], "]"}]], "Input",
+ CellChangeTimes->{{3.784075218710443*^9, 3.784075251040588*^9}},
+ CellLabel->
+  "In[123]:=",ExpressionUUID->"d6cfffbc-842b-4914-88c6-9b8292a5c5b4"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{
+    RowBox[{
+     RowBox[{"-", "1.`"}], "+", 
+     RowBox[{"0.27374906725366466`", " ", 
+      RowBox[{"m", "[", "1", "]"}]}]}], "\[Equal]", "0"}], ",", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"-", "1.`"}], "+", 
+     RowBox[{"0.49726662265778887`", " ", 
+      RowBox[{"(", 
+       RowBox[{"1", "+", 
+        RowBox[{"0.2569948924730372`", " ", 
+         RowBox[{"m", "[", "1", "]"}]}]}], ")"}], " ", 
+      RowBox[{"m", "[", "3", "]"}]}]}], "\[Equal]", "0"}]}], "}"}]], "Output",\
+
+ CellChangeTimes->{3.784075252037697*^9},
+ CellLabel->
+  "Out[123]=",ExpressionUUID->"c3454ced-174d-4ba2-b3a4-3041d802853f"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"expressionMatrix", "[", 
+   RowBox[{"params", ",", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"1", ",", "1", ",", "1"}], "}"}], ",", 
+      RowBox[{"{", 
+       RowBox[{"1", ",", "0", ",", "1"}], "}"}]}], "}"}]}], "]"}], " ", "//", 
+  " ", "MatrixForm"}]], "Input",
+ CellChangeTimes->{{3.6254923533897552`*^9, 3.625492392878829*^9}, {
+  3.656787677434432*^9, 
+  3.6567876890998096`*^9}},ExpressionUUID->"bcc3feb0-a819-4f03-b93d-\
+7dc0d6467421"],
+
+Cell[BoxData[
+ TagBox[
+  RowBox[{"(", "\[NoBreak]", GridBox[{
+     {"0.46967220324710934`", "6.624948160078008`", "0.3954942036979269`"},
+     {"1.2206798866801323`", "0", "0.6809586429317035`"}
+    },
+    GridBoxAlignment->{
+     "Columns" -> {{Center}}, "ColumnsIndexed" -> {}, "Rows" -> {{Baseline}}, 
+      "RowsIndexed" -> {}},
+    GridBoxSpacings->{"Columns" -> {
+        Offset[0.27999999999999997`], {
+         Offset[0.7]}, 
+        Offset[0.27999999999999997`]}, "ColumnsIndexed" -> {}, "Rows" -> {
+        Offset[0.2], {
+         Offset[0.4]}, 
+        Offset[0.2]}, "RowsIndexed" -> {}}], "\[NoBreak]", ")"}],
+  Function[BoxForm`e$, 
+   MatrixForm[BoxForm`e$]]]], "Output",
+ CellChangeTimes->{{3.6254923835958843`*^9, 3.625492393473589*^9}, 
+   3.625492521390285*^9, 
+   3.625492852852025*^9},ExpressionUUID->"0aafbf24-033f-4b3c-adfd-\
+9563ae8c2228"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"rules", " ", "=", " ", 
+  RowBox[{"Table", "[", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"m", "[", "i", "]"}], ",", "1"}], "}"}], ",", 
+    RowBox[{"{", 
+     RowBox[{"i", ",", "3"}], "}"}]}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.784075992110591*^9, 3.784076055910632*^9}, {
+  3.7840760955666933`*^9, 3.784076097517489*^9}, {3.784076162059107*^9, 
+  3.784076173164213*^9}},ExpressionUUID->"c2cee448-b073-4a60-b86b-\
+63673dbed26d"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{
+      RowBox[{
+       RowBox[{"-", "1.`"}], "+", 
+       RowBox[{"0.49726662265778887`", " ", 
+        RowBox[{"(", 
+         RowBox[{"1", "+", 
+          RowBox[{"0.2569948924730372`", " ", 
+           RowBox[{"m", "[", "1", "]"}]}]}], ")"}], " ", 
+        RowBox[{"(", 
+         RowBox[{"1", "+", 
+          RowBox[{"0.42087980612229337`", " ", 
+           RowBox[{"m", "[", "2", "]"}]}]}], ")"}], " ", 
+        RowBox[{"m", "[", "3", "]"}]}]}], "\[Equal]", "0"}], 
+     ",", "\<\"m[i]\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{
+      RowBox[{
+       RowBox[{"-", "1.`"}], "+", 
+       RowBox[{"0.49726662265778887`", " ", 
+        RowBox[{"(", 
+         RowBox[{"1", "+", 
+          RowBox[{"0.2569948924730372`", " ", 
+           RowBox[{"m", "[", "1", "]"}]}]}], ")"}], " ", 
+        RowBox[{"(", 
+         RowBox[{"1", "+", 
+          RowBox[{"0.42087980612229337`", " ", 
+           RowBox[{"m", "[", "2", "]"}]}]}], ")"}], " ", 
+        RowBox[{"m", "[", "3", "]"}]}]}], "\[Equal]", "0"}], 
+     ",", "\<\"m[i]\"\>"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{
+      RowBox[{
+       RowBox[{"-", "1.`"}], "+", 
+       RowBox[{"0.49726662265778887`", " ", 
+        RowBox[{"(", 
+         RowBox[{"1", "+", 
+          RowBox[{"0.2569948924730372`", " ", 
+           RowBox[{"m", "[", "1", "]"}]}]}], ")"}], " ", 
+        RowBox[{"(", 
+         RowBox[{"1", "+", 
+          RowBox[{"0.42087980612229337`", " ", 
+           RowBox[{"m", "[", "2", "]"}]}]}], ")"}], " ", 
+        RowBox[{"m", "[", "3", "]"}]}]}], "\[Equal]", "0"}], 
+     ",", "\<\"m[i]\"\>"}], "}"}]}], "}"}]], "Output",
+ CellChangeTimes->{{3.784076056599823*^9, 3.7840760597384253`*^9}},
+ CellLabel->
+  "Out[126]=",ExpressionUUID->"8c57a7c5-7e38-4f93-9988-e1faf360d1fa"]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{"FindRoot", "[", "]"}]], "Input",
+ CellChangeTimes->{{3.784075974225959*^9, 
+  3.7840759758374643`*^9}},ExpressionUUID->"dc3f4bc4-59e0-4823-9a64-\
+3cb3016e4100"],
+
+Cell["\<\
+This matrix shows that when gene 2 is deleted (second row), the levels of \
+genes 1 and 3 go up relative to wild-type (first row). Looking back at the \
+randomly generated parameters we used, you can see that both gene 1 and gene \
+3 are repressed by gene 2. \
+\>", "Text",
+ CellChangeTimes->{{3.6254932734523907`*^9, 3.625493291513116*^9}, {
+  3.62549377580715*^9, 3.625493806626046*^9}, {3.625938485378008*^9, 
+  3.62593848657721*^9}, {3.6567636041311398`*^9, 
+  3.656763627657351*^9}},ExpressionUUID->"4ed68074-2d8c-4028-a005-\
+f960b1217945"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"eMatrix", "=", 
+   RowBox[{"expressionMatrix", "[", 
+    RowBox[{"params", ",", 
+     RowBox[{"{", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"1", ",", "1", ",", "1"}], "}"}], ",", 
+       RowBox[{"{", 
+        RowBox[{"1", ",", "0", ",", "1"}], "}"}], ",", " ", 
+       RowBox[{"{", 
+        RowBox[{"1", ",", "1", ",", "0"}], "}"}]}], "}"}]}], "]"}]}], ";", 
+  " ", 
+  RowBox[{"eMatrix", "//", " ", "MatrixForm"}]}]], "Input",
+ CellChangeTimes->{{3.6254923533897552`*^9, 3.625492392878829*^9}, {
+  3.625493833627904*^9, 3.62549384658514*^9}, {3.6568597691007357`*^9, 
+  3.656859772419202*^9}, {3.65685986557099*^9, 
+  3.656859873551*^9}},ExpressionUUID->"455cd587-2de8-46aa-bfdf-c78b7427d824"],
+
+Cell[BoxData[
+ TagBox[
+  RowBox[{"(", "\[NoBreak]", GridBox[{
+     {"2.5647591721742877`", "2.126394237552031`", "0.5886579116035183`"},
+     {"4.97205768271195`", "0", "1.222836510978485`"},
+     {"2.5647591721742877`", "2.126394237552031`", "0"}
+    },
+    GridBoxAlignment->{
+     "Columns" -> {{Center}}, "ColumnsIndexed" -> {}, "Rows" -> {{Baseline}}, 
+      "RowsIndexed" -> {}},
+    GridBoxSpacings->{"Columns" -> {
+        Offset[0.27999999999999997`], {
+         Offset[0.7]}, 
+        Offset[0.27999999999999997`]}, "ColumnsIndexed" -> {}, "Rows" -> {
+        Offset[0.2], {
+         Offset[0.4]}, 
+        Offset[0.2]}, "RowsIndexed" -> {}}], "\[NoBreak]", ")"}],
+  Function[BoxForm`e$, 
+   MatrixForm[BoxForm`e$]]]], "Output",
+ CellChangeTimes->{3.625493854078281*^9, 3.65685977286022*^9, 
+  3.656859875980142*^9, 
+  3.656860208109942*^9},ExpressionUUID->"9ad8a3b2-84fe-48ab-a99f-\
+e5058b65633b"]
+}, Open  ]],
+
+Cell["\<\
+This matrix shows that if we delete gene 3 (last row) the levels of 1 and 2 \
+remain as they were in the wild type (first row). That\[CloseCurlyQuote]s \
+because when we first generated the parameters, we specified that gene 3 was \
+not a regulator. As a result, the parameters generated contained all zeros in \
+row 3 of the c matrix.\
+\>", "Text",
+ CellChangeTimes->{{3.6254938586057367`*^9, 3.625493924298366*^9}, {
+  3.625938516057913*^9, 3.6259385168756647`*^9}, {3.6567636489759207`*^9, 
+  3.656763653051846*^9}, {3.6567890818474827`*^9, 3.656789084508852*^9}, {
+  3.65685989495868*^9, 3.6568599030873404`*^9}, {3.689351824691502*^9, 
+  3.6893518249128027`*^9}},ExpressionUUID->"2c5fa6da-b9a1-477b-a05c-\
+05b3c27fc8b6"],
+
+Cell["\<\
+IMPORTANT: Please read the documentation text above the code for \
+expressionProfile concerning the use of built in function FindRoot to solve \
+equations with bounds on the unknown variables. You must use the bounded \
+ranges specified for the unknowns in the Introduction section to this \
+document above.\
+\>", "Text",
+ CellChangeTimes->{{3.7515767711083717`*^9, 
+  3.7515768807500343`*^9}},ExpressionUUID->"c5a2db17-878d-451f-8867-\
+e5e20d14f76d"],
+
+Cell[CellGroupData[{
+
+Cell["Rubric for Parts 1-3", "Subsubsection",
+ CellChangeTimes->{{3.751574959414982*^9, 
+  3.751574969911005*^9}},ExpressionUUID->"88ecd09a-5e82-49fd-bf2f-\
+9cc48cf00b10"],
+
+Cell[CellGroupData[{
+
+Cell["1 point for correct implementation of functions in Part 1", "Item",
+ CellChangeTimes->{{3.7515750240974197`*^9, 3.7515750552582903`*^9}, {
+  3.7515751066597977`*^9, 
+  3.7515751436363077`*^9}},ExpressionUUID->"be329f30-1982-4238-b400-\
+6f522f4652e6"],
+
+Cell["1 point for correct implementation of functions in Part 2", "Item",
+ CellChangeTimes->{{3.7515750240974197`*^9, 3.7515750552582903`*^9}, {
+  3.7515751066597977`*^9, 
+  3.751575147980081*^9}},ExpressionUUID->"82c92958-499f-4007-b11a-\
+952efa5bb1df"],
+
+Cell["2 point for correct implementation of functions in Part 3", "Item",
+ CellChangeTimes->{{3.7515750240974197`*^9, 3.7515750552582903`*^9}, {
+  3.7515751066597977`*^9, 
+  3.75157515118174*^9}},ExpressionUUID->"33d0ce9a-c931-4f53-981e-\
+81c6d52d65b0"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["\<\
+Part 4: Inferring parameters from expression data in repressor deletion \
+strains\
+\>", "Subsection",
+ CellGroupingRules->{"SectionGrouping", Inherited},
+ CellChangeTimes->{{3.626087290579936*^9, 3.6260873178913193`*^9}, {
+  3.656789133731374*^9, 
+  3.656789169893135*^9}},ExpressionUUID->"ceee060e-0562-4967-95b3-\
+57442863aa4a"],
+
+Cell[CellGroupData[{
+
+Cell["\<\
+Equations with known expression levels but unknown parameter values\
+\>", "Subsubsection",
+ CellChangeTimes->{{3.656786229581727*^9, 3.6567862499823513`*^9}, {
+  3.6567892526880074`*^9, 3.656789265022229*^9}, {3.656980959833445*^9, 
+  3.6569809639152927`*^9}},ExpressionUUID->"6e142b80-598e-4ca5-aef5-\
+771e9474bbd7"],
+
+Cell[TextData[{
+ "In the accompying .m file, write a function called ",
+ StyleBox["inferParameters",
+  FontFamily->"Courier",
+  FontWeight->"Bold"],
+ " that takes in a regulators mask, a matrix of gene expression profiles, and \
+a gene presence / genotype mask. All of these are in the same format as \
+specified in previous sections."
+}], "Text",
+ CellChangeTimes->{{3.625848824308606*^9, 3.625848826861432*^9}, {
+  3.656789177005395*^9, 3.656789189486812*^9}, {3.656859459384701*^9, 
+  3.6568595188919697`*^9}},ExpressionUUID->"167360ba-f968-441f-a4c5-\
+abd7c9691385"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"inferredParams", "=", "\[IndentingNewLine]", 
+  RowBox[{"inferParameters", "[", "\[IndentingNewLine]", 
+   RowBox[{"(*", " ", 
+    RowBox[{"Both", " ", "genes", " ", "are", " ", "regulators"}], " ", 
+    "*)"}], "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{"1", ",", "1"}], "}"}], ",", "\[IndentingNewLine]", 
+    RowBox[{"(*", " ", 
+     RowBox[{
+     "Here", " ", "are", " ", "their", " ", "expression", " ", "levels", " ", 
+      "in", " ", "three", " ", "different", " ", "experiments"}], "*)"}], 
+    "\[IndentingNewLine]", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"0.", ",", "5."}], "}"}], ",", 
+      RowBox[{"{", 
+       RowBox[{"10.", ",", "0."}], "}"}], ",", 
+      RowBox[{"{", 
+       RowBox[{"2.", ",", "5."}], "}"}]}], "}"}], ",", "\[IndentingNewLine]", 
+    
+    RowBox[{"(*", " ", 
+     RowBox[{
+     "Here", " ", "is", " ", "the", " ", "matrix", " ", "which", " ", "shows",
+       " ", "which", " ", "TFs", " ", "were", " ", "present", " ", 
+      RowBox[{"(", 
+       RowBox[{"not", " ", "deleted"}], ")"}], " ", "in", " ", "each", " ", 
+      RowBox[{"experiment", "."}]}], "*)"}], "\[IndentingNewLine]", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"0", ",", "1"}], "}"}], ",", 
+      RowBox[{"{", 
+       RowBox[{"1", ",", "0"}], "}"}], ",", " ", 
+      RowBox[{"{", 
+       RowBox[{"1", ",", "1"}], "}"}]}], "}"}]}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.625848828777483*^9, 3.625848828778227*^9}, {
+   3.6568595225008297`*^9, 3.656859534535946*^9}, {3.656859659555726*^9, 
+   3.6568597244951344`*^9}, {3.6568597864726458`*^9, 3.6568597961279297`*^9}, 
+   3.656860403630911*^9, {3.656860608475163*^9, 3.656860626416874*^9}, {
+   3.656860691390855*^9, 
+   3.656860880320414*^9}},ExpressionUUID->"b0b8abd7-9f03-480d-9b49-\
+b8365d07cb1c"],
+
+Cell[BoxData[
+ InterpretationBox[
+  RowBox[{"\<\"Sum squared error:\"\>", "\[InvisibleSpace]", 
+   "2.2006006912898827`*^-14"}],
+  SequenceForm["Sum squared error:", 2.2006006912898827`*^-14],
+  Editable->False]], "Print",
+ CellChangeTimes->{
+  3.656859727052631*^9, {3.6568597879429693`*^9, 3.6568597967691517`*^9}, 
+   3.656860216245413*^9, 3.656860406731201*^9, {3.656860611521611*^9, 
+   3.656860626951646*^9}, 3.6568607187277527`*^9, {3.656860749798521*^9, 
+   3.6568607733033323`*^9}, 
+   3.656860883439754*^9},ExpressionUUID->"1e3c363b-eace-4f59-92aa-\
+7f7d4e21e567"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"0.09999998578086859`", ",", "0.19999999173925745`"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{"0", ",", "1.8707600128952878`*^-8"}], "}"}], ",", 
+     RowBox[{"{", 
+      RowBox[{"0.8000001340353606`", ",", "0"}], "}"}]}], "}"}]}], 
+  "}"}]], "Output",
+ CellChangeTimes->{
+  3.656859727100214*^9, {3.656859787980318*^9, 3.6568597968128223`*^9}, 
+   3.656860216285061*^9, 3.656860406787801*^9, {3.656860611525093*^9, 
+   3.656860626954455*^9}, 3.656860718730377*^9, {3.656860749802578*^9, 
+   3.656860773307057*^9}, 
+   3.656860883442389*^9},ExpressionUUID->"bfd2dd8a-7039-4edd-812b-\
+cd915c25025f"]
+}, Open  ]],
+
+Cell["\<\
+In my implementation I printed the sum of squared errors before returning the \
+parameters (in the same format as above). The sum of squared errors gives you \
+an idea of how well the minimization worked -- the smaller the better.\
+\>", "Text",
+ CellChangeTimes->{{3.656860910995474*^9, 3.6568609935459347`*^9}, {
+   3.656861040750373*^9, 3.656861041774333*^9}, 
+   3.656980991915929*^9},ExpressionUUID->"831e3567-1dc8-48ca-9752-\
+6956f2ee297b"],
+
+Cell[TextData[{
+ "To implement ",
+ StyleBox["inferParameters",
+  FontFamily->"Courier",
+  FontWeight->"Bold"],
+ ", you should use the built in function ",
+ StyleBox["NMinimize",
+  FontFamily->"Courier",
+  FontWeight->"Bold"],
+ ". ",
+ StyleBox["NMinimize",
+  FontFamily->"Courier",
+  FontWeight->"Bold"],
+ " takes an expression containing some variables, optionally a set of \
+equations or inequalities describing constraints on the solution, and a list \
+of the variables to be varied in trying to minimize the value of the first \
+expression. As above, each steady state equation has zero on one side and on \
+the other side a polynomial in the mRNA concentrations and parameters. In \
+other words, at steady state, the concentrations and parameters should be \
+such that all the polynomials evaluate to zero. To find the parameters, you \
+will minimize the sum of squared values of the polynomials -- i.e. the sum of \
+their squared deviations from zero. You can get an expression for the sum of \
+squared deviations from zero by taking the dot product of a vector of these \
+polynomial equations and itself (using ",
+ StyleBox["Dot",
+  FontFamily->"Courier",
+  FontWeight->"Bold"],
+ ") . "
+}], "Text",
+ CellChangeTimes->{{3.6258494946092653`*^9, 3.625849504771571*^9}, {
+   3.625849539026124*^9, 3.625849856740159*^9}, {3.625849985811213*^9, 
+   3.625850094183825*^9}, {3.6258501375890713`*^9, 3.62585017229609*^9}, {
+   3.6567638325694857`*^9, 3.656763832965711*^9}, {3.656763915137145*^9, 
+   3.656763927908079*^9}, {3.6567639961294107`*^9, 3.6567640038456*^9}, {
+   3.65686106999297*^9, 3.6568610732833357`*^9}, {3.656861138168755*^9, 
+   3.6568612679870777`*^9}, {3.6569810268653708`*^9, 
+   3.6569810506794443`*^9}, {3.65698110691614*^9, 3.65698116536957*^9}, 
+   3.689352166969655*^9},ExpressionUUID->"b52d77b0-eb61-48ca-8410-\
+fc11a7ef2cf1"],
+
+Cell["\<\
+Here are some auxiliary functions you will want to write. Tests for them are \
+provided in the test notebook.\
+\>", "Text",
+ CellChangeTimes->{{3.6569812519577827`*^9, 
+  3.6569812947788467`*^9}},ExpressionUUID->"924ae304-d3e3-4f64-875e-\
+c1f7c148f6ce"],
+
+Cell[CellGroupData[{
+
+Cell[TextData[{
+ StyleBox["parameterEqns[eqns_, geneExpressionProfile_]",
+  FontFamily->"Courier",
+  FontWeight->"Bold"],
+ " takes as its first argument a set of genotype-specific equations in which \
+both the parameters and the expression levels are unknown variables (as \
+output by ",
+ StyleBox["mutantEqns",
+  FontFamily->"Courier",
+  FontWeight->"Bold"],
+ "). It\[CloseCurlyQuote]s second argument is the gene expression profile \
+from one  experiment. The result is the input equations with the expression \
+level variables replaced by the actual levels from the experiment. You\
+\[CloseCurlyQuote]ll call this for each separate experiment, which has its \
+own set of equations (depending on the genotype) and its own expression \
+profile."
+}], "Item",
+ CellChangeTimes->{{3.6569813092900457`*^9, 3.6569813962620277`*^9}, {
+  3.656981433797144*^9, 3.656981630866625*^9}, {3.657034326531378*^9, 
+  3.6570343265342093`*^9}, {3.65703465835205*^9, 3.657034685184723*^9}, {
+  3.657034839849025*^9, 3.657034847711556*^9}, {3.657034963617638*^9, 
+  3.657034985171767*^9}, {3.6893522748273*^9, 
+  3.6893522930953503`*^9}},ExpressionUUID->"c0a99125-6ab0-40cc-86dc-\
+ca2ba0e209dc"],
+
+Cell[TextData[{
+ StyleBox["parameterSumSquaredError[eqns_]",
+  FontFamily->"Courier",
+  FontWeight->"Bold"],
+ " takes in equations and returns the sum of squared differences between \
+their two sides. In this particular case the right-hand-sides will all be \
+zero, but generally you want to minimize the differences between left and \
+right. This is trivial to implement using ",
+ StyleBox["Dot",
+  FontFamily->"Courier",
+  FontWeight->"Bold"],
+ "."
+}], "Item",
+ CellChangeTimes->{{3.6569813092900457`*^9, 3.6569813962620277`*^9}, {
+  3.656981433797144*^9, 3.656981630866625*^9}, {3.657034326531378*^9, 
+  3.657034401470249*^9}, {3.6570344376670723`*^9, 3.657034502319797*^9}, {
+  3.657034563480522*^9, 3.65703456348367*^9}, {3.689352343942656*^9, 
+  3.689352345797728*^9}},ExpressionUUID->"13a5d6d9-e2c4-408b-afd9-\
+d1b363f8ab3e"],
+
+Cell[TextData[{
+ "You\[CloseCurlyQuote]ll also need to produce list of unknown parameter \
+values to solve for (",
+ StyleBox["NMinimize",
+  FontFamily->"Courier",
+  FontWeight->"Bold"],
+ " needs this). You might think you could just list out all the b and c \
+variables but that doesn\[CloseCurlyQuote]t work because certain unknowns are \
+not present in any of these equations. Two specific cases to consider are (1) \
+if gene i does not encode a regulator (as specified by the regulatorsMask) \
+then row i of the c matrix (representing its repressive powers) will be all \
+zeros; and (2) if for whatever reason the expression level of gene i is zero \
+in every experiment then there will be neither a b[i] unknown nor a row i of \
+the c matrix. In my implementation, I set up a vector of all b-parameter \
+variables and a matrix of all c-parameter values first. Then I used matrix \
+multiplication to zero out rows with two masks corresponding to the two cases \
+above. I used the result to generate the list of unknowns. I also applied the \
+replacement rules returned by ",
+ StyleBox["NMinimize",
+  FontFamily->"Courier",
+  FontWeight->"Bold"],
+ " to it to produce the structure to return from ",
+ StyleBox["inferParameters",
+  FontFamily->"Courier",
+  FontWeight->"Bold"],
+ "."
+}], "Item",
+ CellChangeTimes->{{3.6569813092900457`*^9, 3.6569813962620277`*^9}, {
+   3.656981433797144*^9, 3.656981630866625*^9}, {3.657034326531378*^9, 
+   3.657034401470249*^9}, {3.6570344376670723`*^9, 3.657034502319797*^9}, {
+   3.657034563480522*^9, 3.657034636588071*^9}, {3.65703500177136*^9, 
+   3.657035015920897*^9}, {3.6570350659879227`*^9, 3.657035475968678*^9}, {
+   3.657035506572113*^9, 3.657035532117405*^9}, 
+   3.689352382207992*^9},ExpressionUUID->"8904f4b3-9fca-4486-9c7d-\
+171c8debc585"]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Rubric for Part 4", "Subsubsection",
+ CellGroupingRules->{"SectionGrouping", Inherited},
+ CellChangeTimes->{{3.751575213074459*^9, 
+  3.7515752182833033`*^9}},ExpressionUUID->"27c96791-815f-4434-9c24-\
+edc4031e5b33"],
+
+Cell[CellGroupData[{
+
+Cell["1 point for correct implementation of parameterEqns[]", "Item",
+ CellChangeTimes->{{3.7515750240974197`*^9, 3.7515750552582903`*^9}, {
+  3.7515751066597977`*^9, 3.75157515118174*^9}, {3.751575237966549*^9, 
+  3.751575287027705*^9}},ExpressionUUID->"dcb6938e-55c1-466e-bb2c-\
+f75cc571bca4"],
+
+Cell["\<\
+1 point for correct implementation of parameterSumSquaredError[]\
+\>", "Item",
+ CellChangeTimes->{{3.7515750240974197`*^9, 3.7515750552582903`*^9}, {
+  3.7515751066597977`*^9, 3.75157515118174*^9}, {3.751575237966549*^9, 
+  3.751575315988682*^9}},ExpressionUUID->"80054c44-44ce-465d-94e7-\
+0d31b295a0a7"],
+
+Cell["2 points for correct implementation of inferParameters[]", "Item",
+ CellChangeTimes->{{3.7515750240974197`*^9, 3.7515750552582903`*^9}, {
+  3.7515751066597977`*^9, 3.75157515118174*^9}, {3.751575237966549*^9, 
+  3.751575337091247*^9}},ExpressionUUID->"9936fc35-d106-4181-9bdf-\
+a30f9f11d1c0"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{1060, 800},
+WindowMargins->{{Automatic, 120}, {Automatic, 5}},
+Magnification->1.25,
+FrontEndVersion->"12.0 for Mac OS X x86 (64-bit) (April 8, 2019)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[422, 15, 192, 3, 200, "Title",ExpressionUUID->"1332c813-6e2b-4c02-89aa-92baec36312d"],
+Cell[CellGroupData[{
+Cell[639, 22, 156, 3, 84, "Section",ExpressionUUID->"2e7c6876-5e14-41a7-bf36-638c74e520e1"],
+Cell[798, 27, 304, 7, 44, "Text",ExpressionUUID->"7d0d80dd-8a8e-419b-8a3e-60da9d93951e"],
+Cell[1105, 36, 847, 22, 67, "DisplayFormulaNumbered",ExpressionUUID->"adf86c42-ccaa-4f09-95c1-af8f845b390f"],
+Cell[1955, 60, 1310, 31, 105, "Text",ExpressionUUID->"eafd5732-48fe-4452-9d0d-25a685037d96"],
+Cell[3268, 93, 605, 10, 102, "Text",ExpressionUUID->"93e80e8f-865e-4409-b580-2ad702525595"],
+Cell[CellGroupData[{
+Cell[3898, 107, 369, 11, 43, "Item",ExpressionUUID->"d1a0a456-18d5-4645-aaac-3a4ca3ab5caa"],
+Cell[4270, 120, 456, 12, 67, "Item",ExpressionUUID->"9a58f626-0521-40ec-9282-cd6549ffd490"],
+Cell[4729, 134, 2330, 49, 73, "Item",ExpressionUUID->"3742971e-06c2-41a2-aeeb-70549b40bcf9"]
+}, Open  ]],
+Cell[7074, 186, 270, 6, 44, "Text",ExpressionUUID->"50c91cb9-3458-478f-912f-5e9dfd63b681"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[7381, 197, 157, 3, 84, "Section",ExpressionUUID->"d612d990-9f5b-410f-9c60-162c9a39668a"],
+Cell[CellGroupData[{
+Cell[7563, 204, 288, 5, 67, "Subsection",ExpressionUUID->"067f99d6-261c-4b4f-99ba-eedc43544102",
+ CellGroupingRules->{"SectionGrouping", Inherited}],
+Cell[7854, 211, 676, 12, 102, "Text",ExpressionUUID->"90463204-69d0-4bfa-ada5-5f4d143dc49d"],
+Cell[8533, 225, 283, 7, 37, "Input",ExpressionUUID->"7bb0144c-5bcb-457e-b0cf-59c76b2d8867"],
+Cell[8819, 234, 538, 12, 73, "Text",ExpressionUUID->"f460d3d8-4763-4966-b1f0-df14b58a5896"],
+Cell[9360, 248, 215, 5, 37, "Input",ExpressionUUID->"4ec1940a-242f-43a6-8c8b-8190b3176334"],
+Cell[9578, 255, 444, 11, 44, "Text",ExpressionUUID->"11bcdcc9-8b58-4b79-b9a5-280592df0ab7"],
+Cell[10025, 268, 510, 12, 37, "Input",ExpressionUUID->"53c85ba0-5411-4c24-9df3-be5fde9869cf"],
+Cell[10538, 282, 195, 3, 44, "Text",ExpressionUUID->"c6d006a2-bc29-431e-b8a7-71ae13c2a2e6"],
+Cell[CellGroupData[{
+Cell[10758, 289, 224, 6, 37, "Input",ExpressionUUID->"01665833-1b88-4f63-97b8-5c388f74a459"],
+Cell[10985, 297, 267, 6, 42, "Output",ExpressionUUID->"51d30638-7a59-4a1a-8702-ae3cadcf6d05"]
+}, Open  ]],
+Cell[11267, 306, 272, 6, 44, "Text",ExpressionUUID->"706dd4aa-6474-4e62-a45a-85aa710b6559"],
+Cell[CellGroupData[{
+Cell[11564, 316, 293, 7, 37, "Input",ExpressionUUID->"bbc379b9-e2d4-4a02-b773-bacec4f0cfb7"],
+Cell[11860, 325, 827, 21, 83, "Output",ExpressionUUID->"c4835d4d-070b-4abc-bfbc-60c3d00bcb5c"]
+}, Open  ]],
+Cell[12702, 349, 559, 12, 102, "Text",ExpressionUUID->"7851073d-364f-481c-a4f6-6030119d514c"],
+Cell[13264, 363, 374, 7, 73, "Text",ExpressionUUID->"778aa007-a8fc-4e67-b3fc-71847d138ef3"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[13675, 375, 362, 7, 67, "Subsection",ExpressionUUID->"c0f5f644-118f-448a-952a-fbf2ffa83bb5"],
+Cell[CellGroupData[{
+Cell[14062, 386, 170, 3, 56, "Subsubsection",ExpressionUUID->"77ddedc4-9b73-474b-baf5-21822087e490"],
+Cell[14235, 391, 2184, 45, 303, "Text",ExpressionUUID->"e29b0b10-5212-4c06-b57b-eb8127d89bbb"],
+Cell[CellGroupData[{
+Cell[16444, 440, 726, 14, 37, "Input",ExpressionUUID->"d6999938-12f4-42c0-b99f-1195897abbfb"],
+Cell[17173, 456, 2964, 81, 85, "Output",ExpressionUUID->"e8dd065a-08ab-4dd0-ab48-74d31b56dba5"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[20174, 542, 473, 9, 37, "Input",ExpressionUUID->"a1389c26-56e4-42bc-99da-9a0e2bec1378"],
+Cell[20650, 553, 2834, 80, 99, "Output",ExpressionUUID->"9b520e83-897f-4b86-b9bd-637bf4b694f3"]
+}, Open  ]],
+Cell[23499, 636, 468, 9, 102, "Text",ExpressionUUID->"ec7ff5a7-7866-4a8a-bd9c-e9ab55ca1f09"],
+Cell[CellGroupData[{
+Cell[23992, 649, 690, 13, 37, "Input",ExpressionUUID->"cc29ca3e-ced1-4bfa-b1d6-96e69f951cc6"],
+Cell[24685, 664, 1745, 49, 63, "Output",ExpressionUUID->"76561887-655b-44dd-8939-e111c85d757f"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[26467, 718, 386, 9, 37, "Input",ExpressionUUID->"85c293e1-f5cd-413e-af0d-50c85db4918b"],
+Cell[26856, 729, 1511, 45, 77, "Output",ExpressionUUID->"35c9631d-f0c2-4ba7-bbba-827d6c078a7e"]
+}, Open  ]],
+Cell[28382, 777, 512, 21, 44, "Text",ExpressionUUID->"3622c333-02e8-41e4-8b5e-b0507e2ddfa7"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[28931, 803, 228, 5, 56, "Subsubsection",ExpressionUUID->"2f898237-46a1-415c-9784-769b5cf21490"],
+Cell[29162, 810, 422, 8, 73, "Text",ExpressionUUID->"491b094f-a13a-4234-87fa-5dfc37064b0c"],
+Cell[CellGroupData[{
+Cell[29609, 822, 442, 9, 64, "Input",ExpressionUUID->"ae5f4891-c447-4e83-907b-b06f3eccc334"],
+Cell[30054, 833, 1318, 37, 63, "Output",ExpressionUUID->"567ae8f4-48d2-422e-ae62-5130e2a0b500"]
+}, Open  ]],
+Cell[31387, 873, 403, 11, 73, "Text",ExpressionUUID->"089d1788-323c-4094-a154-09dbf5d8ec00"],
+Cell[31793, 886, 598, 11, 102, "Text",ExpressionUUID->"97f45164-afe8-48b5-97ba-5b2fa917d876"],
+Cell[CellGroupData[{
+Cell[32416, 901, 277, 6, 37, "Input",ExpressionUUID->"fb394d95-c230-438c-9a1b-1fe85774044e"],
+Cell[32696, 909, 301, 8, 42, "Output",ExpressionUUID->"d90ad315-6e4f-4d8e-91ff-9943ef3c8165"]
+}, Open  ]],
+Cell[33012, 920, 392, 8, 73, "Text",ExpressionUUID->"3cf86932-978c-436c-b1e5-014f566c795f"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[33453, 934, 324, 6, 67, "Subsection",ExpressionUUID->"9a984f0a-9af8-4253-8f7e-4e61ec7639d8"],
+Cell[33780, 942, 1087, 17, 188, "Text",ExpressionUUID->"9d50c854-74e2-45a1-9d05-a6051013ef78"],
+Cell[CellGroupData[{
+Cell[34892, 963, 252, 5, 37, "Input",ExpressionUUID->"d6cfffbc-842b-4914-88c6-9b8292a5c5b4"],
+Cell[35147, 970, 659, 20, 42, "Output",ExpressionUUID->"c3454ced-174d-4ba2-b3a4-3041d802853f"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[35843, 995, 504, 14, 37, "Input",ExpressionUUID->"bcc3feb0-a819-4f03-b93d-7dc0d6467421"],
+Cell[36350, 1011, 862, 21, 61, "Output",ExpressionUUID->"0aafbf24-033f-4b3c-adfd-9563ae8c2228"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[37249, 1037, 476, 12, 37, "Input",ExpressionUUID->"c2cee448-b073-4a60-b86b-63673dbed26d"],
+Cell[37728, 1051, 1863, 53, 95, "Output",ExpressionUUID->"8c57a7c5-7e38-4f93-9988-e1faf360d1fa"]
+}, Open  ]],
+Cell[39606, 1107, 184, 4, 37, "Input",ExpressionUUID->"dc3f4bc4-59e0-4823-9a64-3cb3016e4100"],
+Cell[39793, 1113, 555, 10, 102, "Text",ExpressionUUID->"4ed68074-2d8c-4028-a005-f960b1217945"],
+Cell[CellGroupData[{
+Cell[40373, 1127, 740, 18, 64, "Input",ExpressionUUID->"455cd587-2de8-46aa-bfdf-c78b7427d824"],
+Cell[41116, 1147, 908, 22, 83, "Output",ExpressionUUID->"9ad8a3b2-84fe-48ab-a99f-e5058b65633b"]
+}, Open  ]],
+Cell[42039, 1172, 735, 12, 102, "Text",ExpressionUUID->"2c5fa6da-b9a1-477b-a05c-05b3c27fc8b6"],
+Cell[42777, 1186, 461, 9, 102, "Text",ExpressionUUID->"c5a2db17-878d-451f-8867-e5e20d14f76d"],
+Cell[CellGroupData[{
+Cell[43263, 1199, 171, 3, 56, "Subsubsection",ExpressionUUID->"88ecd09a-5e82-49fd-bf2f-9cc48cf00b10"],
+Cell[CellGroupData[{
+Cell[43459, 1206, 256, 4, 40, "Item",ExpressionUUID->"be329f30-1982-4238-b400-6f522f4652e6"],
+Cell[43718, 1212, 254, 4, 40, "Item",ExpressionUUID->"82c92958-499f-4007-b11a-952efa5bb1df"],
+Cell[43975, 1218, 253, 4, 40, "Item",ExpressionUUID->"33d0ce9a-c931-4f53-981e-81c6d52d65b0"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[44289, 1229, 340, 8, 67, "Subsection",ExpressionUUID->"ceee060e-0562-4967-95b3-57442863aa4a",
+ CellGroupingRules->{"SectionGrouping", Inherited}],
+Cell[CellGroupData[{
+Cell[44654, 1241, 327, 6, 56, "Subsubsection",ExpressionUUID->"6e142b80-598e-4ca5-aef5-771e9474bbd7"],
+Cell[44984, 1249, 570, 12, 102, "Text",ExpressionUUID->"167360ba-f968-441f-a4c5-abd7c9691385"],
+Cell[CellGroupData[{
+Cell[45579, 1265, 1856, 44, 246, "Input",ExpressionUUID->"b0b8abd7-9f03-480d-9b49-b8365d07cb1c"],
+Cell[47438, 1311, 574, 12, 31, "Print",ExpressionUUID->"1e3c363b-eace-4f59-92aa-7f7d4e21e567"],
+Cell[48015, 1325, 704, 18, 46, "Output",ExpressionUUID->"bfd2dd8a-7039-4edd-812b-cd915c25025f"]
+}, Open  ]],
+Cell[48734, 1346, 455, 8, 73, "Text",ExpressionUUID->"831e3567-1dc8-48ca-9752-6956f2ee297b"],
+Cell[49192, 1356, 1851, 38, 246, "Text",ExpressionUUID->"b52d77b0-eb61-48ca-8410-fc11a7ef2cf1"],
+Cell[51046, 1396, 263, 6, 44, "Text",ExpressionUUID->"924ae304-d3e3-4f64-875e-c1f7c148f6ce"],
+Cell[CellGroupData[{
+Cell[51334, 1406, 1177, 23, 172, "Item",ExpressionUUID->"c0a99125-6ab0-40cc-86dc-ca2ba0e209dc"],
+Cell[52514, 1431, 832, 18, 93, "Item",ExpressionUUID->"13a5d6d9-e2c4-408b-afd9-d1b363f8ab3e"],
+Cell[53349, 1451, 1792, 34, 250, "Item",ExpressionUUID->"8904f4b3-9fca-4486-9c7d-171c8debc585"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[55190, 1491, 222, 4, 56, "Subsubsection",ExpressionUUID->"27c96791-815f-4434-9c24-edc4031e5b33",
+ CellGroupingRules->{"SectionGrouping", Inherited}],
+Cell[CellGroupData[{
+Cell[55437, 1499, 295, 4, 40, "Item",ExpressionUUID->"dcb6938e-55c1-466e-bb2c-f75cc571bca4"],
+Cell[55735, 1505, 314, 6, 40, "Item",ExpressionUUID->"80054c44-44ce-465d-94e7-0d31b295a0a7"],
+Cell[56052, 1513, 298, 4, 40, "Item",ExpressionUUID->"9936fc35-d106-4181-9bdf-a30f9f11d1c0"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+}
+]
+*)
+

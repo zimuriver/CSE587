@@ -1,0 +1,1057 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 9.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       157,          7]
+NotebookDataLength[     39183,       1049]
+NotebookOptionsPosition[     31831,        863]
+NotebookOutlinePosition[     32218,        880]
+CellTagsIndexPosition[     32175,        877]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["Dice Gibbs assignment", "Title",
+ CellChangeTimes->{{3.5855109621349773`*^9, 3.5855109786207867`*^9}, {
+  3.713530591023595*^9, 
+  3.7135305924569798`*^9}},ExpressionUUID->"1b92bbf4-8b82-40ef-8165-\
+6dd122d577fa"],
+
+Cell["\<\
+This assignment involves writing some code for a Gibbs sampler and then \
+testing it, doing some experiments, and answering some questions. Please \
+write your answers below the questions and turn this notebook in with your \
+code.\
+\>", "Text",
+ CellChangeTimes->{{3.585512475580336*^9, 3.5855125543489027`*^9}, {
+  3.713530600044231*^9, 
+  3.713530605713516*^9}},ExpressionUUID->"9d12d190-31bc-4002-9aab-\
+9415ffe9f7f9"],
+
+Cell[CellGroupData[{
+
+Cell["Introduction", "Section",
+ CellChangeTimes->{{3.5855110461522093`*^9, 3.58551104688463*^9}, {
+  3.713530755444747*^9, 
+  3.713530758529861*^9}},ExpressionUUID->"56f2f245-2342-4129-9d0a-\
+9a762783bb0f"],
+
+Cell[TextData[{
+ StyleBox["This assignment is based on the same stochastic system \
+(bag-of-dice) used in ",
+  FontColor->Automatic],
+ StyleBox["diceSample,",
+  FontWeight->"Bold",
+  FontColor->Automatic],
+ StyleBox[" ",
+  FontColor->Automatic],
+ StyleBox["dicePosterior",
+  FontWeight->"Bold",
+  FontColor->Automatic],
+ StyleBox[", and ",
+  FontColor->Automatic],
+ StyleBox["diceEM",
+  FontWeight->"Bold",
+  FontColor->Automatic],
+ StyleBox[" assignments.  In these assignments, we have a bag containing two \
+types of dice with different probabilities of rolling each number.  Someone \
+selects a die from the bag at random, rolls it a fixed number of times, \
+reports the outcomes, returns it to the bag, and repeats the process.  Here, \
+you will write code to run a Gibbs sampler to estimate the parameters of the \
+system -- the probability of drawing each die type and the conditional \
+probability of each face given the die type. One of the advantages of Gibbs \
+sampling is that you actually get a bunch of samples so you can construct \
+confidence intervals on the unknown parameters.",
+  FontColor->Automatic]
+}], "Text",
+ CellChangeTimes->{{3.585511054430279*^9, 3.585511089917618*^9}, {
+   3.585511121620488*^9, 3.585511188876453*^9}, {3.585511236981254*^9, 
+   3.585511531292819*^9}, {3.585589550249552*^9, 3.5855895528959713`*^9}, {
+   3.585589618879745*^9, 3.585589736988511*^9}, {3.58558982569786*^9, 
+   3.585589837879303*^9}, {3.5855898971032*^9, 3.585589953134733*^9}, {
+   3.5855899947739897`*^9, 3.5855899989980288`*^9}, {3.585590530378899*^9, 
+   3.585590619913625*^9}, {3.585678954137244*^9, 3.585678994249689*^9}, {
+   3.585915486586301*^9, 3.5859154875789137`*^9}, {3.585915517778281*^9, 
+   3.5859155219063597`*^9}, {3.5860220289383497`*^9, 3.586022029501439*^9}, {
+   3.7135306341875687`*^9, 3.713530725882753*^9}, 3.713530773914398*^9, 
+   3.7135313094359837`*^9, 3.713725697467865*^9, {3.7137257278805103`*^9, 
+   3.713725834930109*^9}},
+ FontColor->RGBColor[
+  0.5, 0, 0.5],ExpressionUUID->"812a0c74-ffa3-4431-b36e-8ac6175f28b2"],
+
+Cell[TextData[{
+ "The model and algorithm for this assignment are described in the technical \
+report by Resnik and Hardesty. The correspondence to that model is that each \
+sequence of rolls of the same die corresponds to a \
+\[OpenCurlyDoubleQuote]document\[CloseCurlyDoubleQuote]. (From here on, we \
+will call such a sequence a \[OpenCurlyDoubleQuote]draw\
+\[CloseCurlyDoubleQuote] -- meaning a draw of one die from out the bag and \
+all the results of rolling that die, until it is returned to the bag.) The \
+numbers on the faces of the two types of dice correspond to the \
+\[OpenCurlyDoubleQuote]vocabulary\[CloseCurlyDoubleQuote]. And the two types \
+of dice correspond to the two \[OpenCurlyDoubleQuote]document labels\
+\[CloseCurlyDoubleQuote]. ",
+ StyleBox["Note",
+  FontWeight->"Bold"],
+ ": instead of using 0 and 1 as the labels, we will use 1 and 2. That way, \
+the labels can be used as indices into lists."
+}], "Text",
+ CellChangeTimes->{{3.713530777450338*^9, 3.7135311833213*^9}, 
+   3.7135312161639433`*^9, {3.713533653066433*^9, 3.713533683744355*^9}, {
+   3.71354006376947*^9, 3.7135401053218317`*^9}, {3.713725873549214*^9, 
+   3.713725878026412*^9}},ExpressionUUID->"5812b1f6-0bdf-439f-9f41-\
+b320a9efe155"],
+
+Cell["\<\
+The goal is (a) determine the marginal probability of each label (die type) \
+for each draw from the bag, and (b) determine the marginal posterior \
+probability distribution on the probability of each face being rolled on each \
+die. In other words, you will not just get point estimates of these but full \
+posterior distributions. From those posterior distributions on the \
+parameters, you can answer questions like, \"What is the probability that the \
+probability of rolling a 2 on a die of type 1 is between is between 0.1 and \
+0.3?\"\
+\>", "Text",
+ CellChangeTimes->{{3.713530777450338*^9, 3.7135311833213*^9}, {
+  3.713725939412801*^9, 
+  3.713725940115993*^9}},ExpressionUUID->"a639eeb8-fd3b-46bc-999d-\
+0adf2a827ac3"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Files", "Section",
+ CellChangeTimes->{{3.713531271786655*^9, 
+  3.713531272544628*^9}},ExpressionUUID->"bfa85777-5be8-4708-8aa5-\
+ffb1f5c29475"],
+
+Cell[CellGroupData[{
+
+Cell["\<\
+Resnik-2010-GibbsSampling.pdf. You will probably end up referring to this a \
+lot as you design and implement your system.\
+\>", "Item",
+ CellChangeTimes->{{3.713531333298285*^9, 
+  3.7135314016438723`*^9}},ExpressionUUID->"cdf59da3-4d44-411b-b731-\
+edb52a08c046"],
+
+Cell["diceGibbsAssignment.nb -- this notebook.", "Item",
+ CellChangeTimes->{{3.713531333298285*^9, 
+  3.7135314229619226`*^9}},ExpressionUUID->"4d61538e-e5a1-4e40-ab3f-\
+97179ba1bda1"],
+
+Cell["\<\
+diceGibbsOuterLoop.m -- a code file containing the top level functions for \
+the Gibbs sampler.\
+\>", "Item",
+ CellChangeTimes->{{3.713531333298285*^9, 3.713531468114561*^9}, {
+  3.71372629160533*^9, 
+  3.713726304505248*^9}},ExpressionUUID->"dded21cf-f519-44b9-b1ed-\
+9aa117c786ba"],
+
+Cell["\<\
+diceGibbsInternals.m -- a file in which you can write the missing functions, \
+sampleLabels and SampleThetas.\
+\>", "Item",
+ CellChangeTimes->{{3.713531333298285*^9, 3.713531468114561*^9}, {
+  3.71372629160533*^9, 
+  3.7137263778693*^9}},ExpressionUUID->"31b5888a-1d25-4c40-92c0-cbb599b18b50"],
+
+Cell["\<\
+diceGibbsInternalsTest.nb -- a test notebook for the loops you will write.\
+\>", "Item",
+ CellChangeTimes->{{3.713531333298285*^9, 3.713531491875736*^9}, {
+  3.713726397887138*^9, 
+  3.713726414771858*^9}},ExpressionUUID->"1919f013-6862-4b1c-9023-\
+c028f202a9c9"],
+
+Cell["\<\
+diceGibbsOuterLoopTests.nb -- a test notebook for the whole thing. This is \
+where you see how the whole thing works.\
+\>", "Item",
+ CellChangeTimes->{{3.713531333298285*^9, 3.713531491875736*^9}, {
+  3.713726397887138*^9, 3.713726453614987*^9}, {3.713726843446659*^9, 
+  3.713726843446897*^9}},ExpressionUUID->"2f5921bb-7a5e-4f84-9cf0-\
+0c4dc9fa2fbd"],
+
+Cell["tools.m -- contains some useful functions.", "Item",
+ CellChangeTimes->{{3.713531333298285*^9, 3.713531491875736*^9}, {
+  3.713726397887138*^9, 3.713726453614987*^9}, {3.713726843782927*^9, 
+  3.7137269196409407`*^9}},ExpressionUUID->"f43a11de-05b8-4976-bd7c-\
+cf56220d0efa"]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Tips", "Section",
+ CellChangeTimes->{{3.713727868587854*^9, 
+  3.713727870393195*^9}},ExpressionUUID->"f9fc655a-55a2-403f-92bb-\
+de2b8de4f95e"],
+
+Cell["\<\
+Because this algorithm is inherently sequential -- each sample of each label \
+or theta changes the distributions for the next one -- I found it much easier \
+to implement this in a more procedural style, setting up a bunch of variables \
+and updating them inside Do loops.\
+\>", "Text",
+ CellChangeTimes->{{3.713727873674178*^9, 
+  3.71372797530016*^9}},ExpressionUUID->"9d26c98b-5673-46b6-bff0-\
+b0a37b74e835"],
+
+Cell["\<\
+Also remember that you can write much more compact code if you use the labels \
+and the die faces in the input as indices into probability matrices.\
+\>", "Text",
+ CellChangeTimes->{{3.713727986084385*^9, 
+  3.713728046388054*^9}},ExpressionUUID->"f550b5c2-c8bb-43ae-8e08-\
+e081eaf755ac"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Data representations and outer loops", "Section",
+ CellChangeTimes->{{3.713046340762043*^9, 3.713046343597446*^9}, {
+  3.713531696710453*^9, 
+  3.713531699078712*^9}},ExpressionUUID->"97153f05-6b94-498d-ae29-\
+74ee4726d4bb"],
+
+Cell["The outer loop, called diceGibbs, takes 3 arguments:", "Text",
+ CellChangeTimes->{{3.713531702310382*^9, 3.713531727974793*^9}, {
+  3.71353181571245*^9, 
+  3.713531833656042*^9}},ExpressionUUID->"b4cac704-b0f6-4bfa-8801-\
+ffb412c2d694"],
+
+Cell[CellGroupData[{
+
+Cell[TextData[{
+ StyleBox["input",
+  FontFamily->"Courier",
+  FontWeight->"Regular",
+  FontColor->RGBColor[0., 0., 0.]],
+ " is a matrix (i.e. list of lists) in which each row (each sublist) is a set \
+of rolls from one draw. "
+}], "Item",
+ CellChangeTimes->{{3.713531849985821*^9, 3.713531890031537*^9}, {
+  3.713534430780595*^9, 
+  3.713534431377833*^9}},ExpressionUUID->"a06bf8a5-9b58-4f1e-8eac-\
+2ad13bc15e6c"],
+
+Cell[TextData[{
+ StyleBox["maxIterations",
+  FontFamily->"Courier",
+  FontSize->15,
+  FontWeight->"Regular",
+  FontColor->RGBColor[0., 0., 0.]],
+ " is the maximum number of EM iterations the function should run before \
+terminating. It\[CloseCurlyQuote]s called ",
+ StyleBox["maxIterations",
+  FontFamily->"Courier",
+  FontWeight->"Regular",
+  FontColor->RGBColor[0., 0., 0.]],
+ " in case other stopping criteria are added later, but in this \
+implementation we will do exactly this many iterations, regardless of what \
+happens."
+}], "Item",
+ CellChangeTimes->{{3.713531849985821*^9, 3.713531934633623*^9}, {
+  3.713531984880343*^9, 
+  3.713531984882628*^9}},ExpressionUUID->"7b28b40e-217e-4891-95f5-\
+7a925ae7df75"],
+
+Cell[TextData[{
+ StyleBox["outputFrequency",
+  FontFamily->"Courier",
+  FontWeight->"Regular",
+  FontColor->RGBColor[0., 0., 0.]],
+ " determines how often the outer loop writes its current sample to a file \
+and prints its current point estimates and confidence intervals around the \
+theta estimates to the notebook. The marginal posterior distributions can be \
+estimated from the samples in the file. The main reason not to store on every \
+iteration is that it would slow the algorithm down a lot."
+}], "Item",
+ CellChangeTimes->{{3.713531849985821*^9, 3.713531934633623*^9}, {
+  3.71353198602595*^9, 3.713532053642716*^9}, {3.713532100980156*^9, 
+  3.713532114316516*^9}, {3.713532144620536*^9, 3.713532305862645*^9}, {
+  3.713532359671439*^9, 3.7135323718847322`*^9}, {3.71372653554675*^9, 
+  3.713726546099028*^9}},ExpressionUUID->"d8593f5d-9c40-4c59-8ec3-\
+fddcff570095"],
+
+Cell[TextData[{
+ StyleBox["outputFile",
+  FontFamily->"Courier",
+  FontWeight->"Regular",
+  FontColor->RGBColor[0., 0., 0.]],
+ " is the directory path to the file where you want the periodic outputs \
+stored. This defaults to \[OpenCurlyDoubleQuote]gibbsSamples.txt\
+\[CloseCurlyDoubleQuote] in the same directory as the notebook from which you \
+invoked the function.\n"
+}], "Item",
+ CellChangeTimes->{{3.713531849985821*^9, 3.713531934633623*^9}, {
+  3.71353198602595*^9, 3.7135320605710897`*^9}, {3.713532335415769*^9, 
+  3.71353234366256*^9}, {3.713532375703471*^9, 
+  3.713532468889016*^9}},ExpressionUUID->"e0843db0-41e6-4151-b699-\
+8f19912ad70b"]
+}, Open  ]],
+
+Cell["\<\
+In addition to printing samples periodically to a file and printing point \
+estimates to the notebook, diceGibbs returns a list consisting of:\
+\>", "Text",
+ CellChangeTimes->{{3.71353252389037*^9, 3.713532667996272*^9}, {
+  3.71353276795859*^9, 
+  3.71353278118869*^9}},ExpressionUUID->"3cb42757-540a-474d-bb1a-\
+f5e179b0f7e4"],
+
+Cell[CellGroupData[{
+
+Cell["\<\
+a list of whose length is the same as the number of input \
+\[OpenCurlyDoubleQuote]draws\[CloseCurlyDoubleQuote] and whose elements are \
+the estimated probability that the true label of the draws is die type 1.\
+\>", "Item",
+ CellChangeTimes->{{3.71353266947477*^9, 3.713532699027087*^9}, {
+  3.713532787796999*^9, 
+  3.7135328584835653`*^9}},ExpressionUUID->"ec5b4b76-c891-4c45-8aab-\
+415d367f1cb7"],
+
+Cell["\<\
+a list of length 2, one per label, where each element is a \
+DirichletDistribution object representing the full distribution on the face \
+probabilities for one die type.\
+\>", "Item",
+ CellChangeTimes->{{3.71353266947477*^9, 3.713532699027087*^9}, {
+  3.713532787796999*^9, 3.713532868005047*^9}, {3.713532970186517*^9, 
+  3.713533007787017*^9}, {3.7135331545456142`*^9, 3.713533260577701*^9}, {
+  3.713533384948419*^9, 
+  3.713533385977846*^9}},ExpressionUUID->"978bd0d0-1195-4cc6-a5ea-\
+5fbeb5e58581"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Hyperparameters", "Subsection",
+ CellChangeTimes->{{3.7135334291012278`*^9, 
+  3.713533432559738*^9}},ExpressionUUID->"e85b2d19-a5b3-44dc-b15d-\
+d2990603df54"],
+
+Cell["\<\
+For the two hyperparameters of the beta distribution prior on label \
+probabilities, the provided code uses {2, 2,}, which is a weak bias toward \
+non-extreme label probabilities.  For the hyperparameters of the Dirichlet \
+distribution on the face probabilities of the two die types, the provided \
+code uses the relative frequencies of each of the faces in the input data, \
+times 10. This means that the strength of the prior is equal to 10 actual \
+observations of faces. Note that these are the same for both die types.\
+\>", "Text",
+ CellChangeTimes->{{3.71353343871723*^9, 3.713533638648224*^9}, {
+  3.713726964940564*^9, 3.713727074835805*^9}, {3.713798647521408*^9, 
+  3.713798674014942*^9}},ExpressionUUID->"6b4581b8-38cc-4fca-bd0b-\
+c4eb82fd2ee6"]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Useful functions", "Section",
+ CellChangeTimes->{{3.713046340762043*^9, 3.713046343597446*^9}, {
+  3.713533763907357*^9, 
+  3.713533767157494*^9}},ExpressionUUID->"d6b4746b-7cf6-4eae-957e-\
+5122a63556a2"],
+
+Cell[CellGroupData[{
+
+Cell[TextData[{
+ StyleBox["RandomVariate",
+  FontFamily->"Courier",
+  FontWeight->"Regular",
+  FontColor->RGBColor[0., 0., 0.]],
+ ", samples from a specified distribution"
+}], "Item",
+ CellChangeTimes->{{3.713608962369961*^9, 
+  3.713608982713435*^9}},ExpressionUUID->"25b2ffb1-1587-481e-a9dc-\
+e8fb3e94626a"],
+
+Cell[TextData[{
+ StyleBox["BernoulliDistribution[p]",
+  FontFamily->"Courier",
+  FontWeight->"Regular",
+  FontColor->RGBColor[0., 0., 0.]],
+ ", describes a distribution that assigns probability p to 1 and probability \
+1 - p to and 0."
+}], "Item",
+ CellChangeTimes->{{3.713608962369961*^9, 3.713609062974638*^9}, {
+  3.713609109282275*^9, 
+  3.713609146551669*^9}},ExpressionUUID->"b097ea3e-9b59-4d1c-9428-\
+f41eed1b539a"],
+
+Cell[TextData[{
+ StyleBox["DirichletDistribution[{a1,..., an}]",
+  FontFamily->"Courier",
+  FontWeight->"Regular",
+  FontColor->RGBColor[0., 0., 0.]],
+ ", describes a multivariate Dirichlet distribution with \
+\[OpenCurlyDoubleQuote]hyper parameters\[CloseCurlyDoubleQuote]  ",
+ StyleBox["a1,..., an",
+  FontFamily->"Courier",
+  FontWeight->"Regular",
+  FontColor->RGBColor[0., 0., 0.]],
+ "."
+}], "Item",
+ CellChangeTimes->{{3.713608962369961*^9, 3.71360908898498*^9}, {
+  3.713609151697589*^9, 3.713609200744123*^9}, {3.7136092348627462`*^9, 
+  3.71360927366005*^9}, {3.713609434799397*^9, 3.7136094383984632`*^9}, {
+  3.7136181796999598`*^9, 
+  3.713618180274111*^9}},ExpressionUUID->"0170a2f0-eae5-43b0-be00-\
+257f0406f1d3"]
+}, Open  ]],
+
+Cell[TextData[{
+ StyleBox["Important note 1:",
+  FontWeight->"Bold"],
+ " Sampling from ",
+ StyleBox["DirichletDistribution[a1,..., an] ",
+  FontFamily->"Courier",
+  FontWeight->"Regular",
+  FontColor->RGBColor[0., 0., 0.]],
+ "will return ",
+ StyleBox["n-1",
+  FontWeight->"Bold"],
+ " numbers between 0 and 1 whose sum is less than one."
+}], "Text",
+ CellChangeTimes->{{3.7136092837486973`*^9, 
+  3.713609338166284*^9}},ExpressionUUID->"05dbe24b-1102-43dd-944e-\
+9b83b6b7a2a8"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"rdd", "=", 
+  RowBox[{"RandomVariate", "[", 
+   RowBox[{"DirichletDistribution", "[", 
+    RowBox[{"{", 
+     RowBox[{"1", ",", " ", "3", ",", " ", "2"}], "}"}], "]"}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.7136093735581713`*^9, 3.713609412948615*^9}, {
+  3.713617788440324*^9, 
+  3.7136177910221167`*^9}},ExpressionUUID->"3b5af9bc-c93d-4d6d-a892-\
+c0bb0e9a4a7b"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"0.17318833007803044`", ",", "0.6959229907470759`"}], 
+  "}"}]], "Output",
+ CellChangeTimes->{3.713609413437132*^9, 3.713617792760221*^9, 
+  3.713617993976625*^9},ExpressionUUID->"5007d79b-39c4-4078-9712-\
+548c221b1903"]
+}, Open  ]],
+
+Cell["\<\
+To interpret the result as the parameters of a multinomial distribution, the \
+probability of the last outcome must be calculated as 1 - the sum of the \
+values sampled from the Dirichlet. \
+\>", "Text",
+ CellChangeTimes->{{3.713609427480961*^9, 3.713609532967368*^9}, {
+  3.7136180731070967`*^9, 
+  3.713618077146875*^9}},ExpressionUUID->"6c6036e6-0632-491d-bad3-\
+fbd3c8415aed"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"RandomVariate", "[", 
+  RowBox[{
+   RowBox[{"MultinomialDistribution", "[", 
+    RowBox[{"10", ",", " ", 
+     RowBox[{"Append", "[", 
+      RowBox[{"rdd", ",", " ", 
+       RowBox[{"1", "-", 
+        RowBox[{"Total", "[", "rdd", "]"}]}]}], "]"}]}], "]"}], ",", " ", 
+   RowBox[{"{", "30", "}"}]}], "]"}]], "Input",
+ CellChangeTimes->{{3.713609546053481*^9, 3.7136095738522367`*^9}, {
+   3.7136177395462523`*^9, 3.7136178408541927`*^9}, {3.713617901505331*^9, 
+   3.713617917015662*^9}, {3.7136180039212713`*^9, 3.713618034000482*^9}, 
+   3.7136180932503242`*^9},ExpressionUUID->"14f05cc4-554f-433c-8391-\
+960f31f1333f"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"1", ",", "6", ",", "3"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"3", ",", "4", ",", "3"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"2", ",", "6", ",", "2"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"1", ",", "7", ",", "2"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"3", ",", "6", ",", "1"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"1", ",", "8", ",", "1"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"2", ",", "6", ",", "2"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"1", ",", "8", ",", "1"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"4", ",", "5", ",", "1"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"2", ",", "7", ",", "1"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"2", ",", "6", ",", "2"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"1", ",", "8", ",", "1"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"1", ",", "8", ",", "1"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"1", ",", "7", ",", "2"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"2", ",", "7", ",", "1"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"4", ",", "6", ",", "0"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"1", ",", "8", ",", "1"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"2", ",", "7", ",", "1"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"1", ",", "7", ",", "2"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"1", ",", "9", ",", "0"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"0", ",", "10", ",", "0"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"5", ",", "3", ",", "2"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"3", ",", "5", ",", "2"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"1", ",", "9", ",", "0"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"3", ",", "6", ",", "1"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"2", ",", "7", ",", "1"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"3", ",", "5", ",", "2"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"2", ",", "8", ",", "0"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"1", ",", "8", ",", "1"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"3", ",", "7", ",", "0"}], "}"}]}], "}"}]], "Output",
+ CellChangeTimes->{
+  3.713617845642704*^9, {3.7136179065748043`*^9, 3.7136179178027678`*^9}, 
+   3.7136180354638243`*^9, 
+   3.7136180939021072`*^9},ExpressionUUID->"82a58353-3678-4758-8cd1-\
+3aaf4f1eb8fc"]
+}, Open  ]],
+
+Cell[TextData[{
+ StyleBox["Important note 2:",
+  FontWeight->"Bold"],
+ " If you give DirichletDistribution a list with only a single parameter, it \
+won\[CloseCurlyQuote]t evaluate."
+}], "Text",
+ CellChangeTimes->{{3.713628642939802*^9, 
+  3.7136286980924997`*^9}},ExpressionUUID->"0b36a7c7-56bb-4b8c-9b19-\
+55381a13f013"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"RandomVariate", "[", 
+  RowBox[{"DirichletDistribution", "[", 
+   RowBox[{"{", 
+    RowBox[{"5", ",", " ", "1"}], "}"}], "]"}], "]"}]], "Input",
+ CellChangeTimes->{{3.713628598324836*^9, 3.713628617171329*^9}, {
+  3.713628720549118*^9, 
+  3.713628720940737*^9}},ExpressionUUID->"dbd5d751-c3eb-4f34-955c-\
+2ec92bae97f7"],
+
+Cell[BoxData[
+ RowBox[{"{", "0.9467750777591033`", "}"}]], "Output",
+ CellChangeTimes->{
+  3.7136287227426863`*^9},ExpressionUUID->"56456379-3418-475a-8d1c-\
+d9e2c029aee5"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"RandomVariate", "[", 
+  RowBox[{"DirichletDistribution", "[", 
+   RowBox[{"{", "5", "}"}], "]"}], "]"}]], "Input",
+ CellChangeTimes->{{3.713628598324836*^9, 3.713628617171329*^9}, {
+  3.713628727773242*^9, 
+  3.713628728132598*^9}},ExpressionUUID->"27fde675-9353-4076-8cae-\
+dee58a121807"],
+
+Cell[BoxData[
+ RowBox[{"RandomVariate", "[", 
+  RowBox[{"DirichletDistribution", "[", 
+   RowBox[{"{", "5", "}"}], "]"}], "]"}]], "Output",
+ CellChangeTimes->{
+  3.713628728799203*^9},ExpressionUUID->"05d7461b-2da8-4802-a375-\
+230816e8b424"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[TextData[{
+ StyleBox["safeExponentiate[base, exponent]",
+  FontFamily->"Courier",
+  FontWeight->"Regular",
+  FontColor->RGBColor[0., 0., 0.]],
+ " In calculating the likelihood of some observations under a multinomial \
+distribution, you might have one of the possible outcomes that never occurs \
+in the observations and that also has probability zero. This can lead to 0^0 \
+which returns ",
+ StyleBox["Indeterminate",
+  FontFamily->"Courier",
+  FontWeight->"Regular",
+  FontColor->RGBColor[0., 0., 0.]],
+ ". In this case, however, since the outcome has never been seen it doesn\
+\[CloseCurlyQuote]t matter what it\[CloseCurlyQuote]s probability is -- when \
+you\[CloseCurlyQuote]re multiplying factors for the various outcomes, the \
+factor for an outcome that has never been observed should be 1 -- no effect. \
+I have provided this function in tools.m to check for that case and do the \
+right thing. "
+}], "Item",
+ CellChangeTimes->{{3.713657327082603*^9, 3.713657585969603*^9}, {
+  3.713727180711501*^9, 
+  3.713727180715261*^9}},ExpressionUUID->"dce7dff7-27b6-4091-a019-\
+cd995d6eff5c"],
+
+Cell[TextData[{
+ StyleBox["diceSample",
+  FontFamily->"Courier",
+  FontWeight->"Regular",
+  FontColor->RGBColor[0., 0., 0.]],
+ " generates random samples that can be used as input to diceGibbs."
+}], "Item",
+ CellChangeTimes->{{3.713657327082603*^9, 3.713657585969603*^9}, {
+  3.713727181325441*^9, 
+  3.7137272104870443`*^9}},ExpressionUUID->"d6ba4879-190a-45b1-b594-\
+e6807726dcfa"],
+
+Cell[TextData[{
+ StyleBox["stackStats",
+  FontFamily->"Courier",
+  FontWeight->"Regular",
+  FontColor->RGBColor[0., 0., 0.]],
+ " prints out marginal expectations for the labels and marginal expectations \
+plus 90% confidence intervals for the thetas. "
+}], "Item",
+ CellChangeTimes->{{3.713657327082603*^9, 3.713657585969603*^9}, {
+  3.713727181325441*^9, 
+  3.7137272760717363`*^9}},ExpressionUUID->"e523b2df-770c-46a6-a7ee-\
+99d694fc8cca"]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Experiments and questions", "Section",
+ CellChangeTimes->{{3.5855125680373287`*^9, 
+  3.5855125711403923`*^9}},ExpressionUUID->"4b445bb2-dc06-4ed4-bcd2-\
+51203cc7d62c"],
+
+Cell[CellGroupData[{
+
+Cell["Comparison to diceEM", "Subsection",
+ CellChangeTimes->{{3.71372751162118*^9, 
+  3.713727519723127*^9}},ExpressionUUID->"c0555dfb-7e3a-4f54-9699-\
+0663dbcf1798"],
+
+Cell["\<\
+Gibbs sampling can be used to solve the same problems as expectation \
+maximization (EM). Below, I have reproduced exactly the questions you were \
+asked to investigate using diceEM. Run the same calculations using diceGibbs \
+and, in each case, comment on how the results of diceGibbs compare to diceEM.\
+\
+\>", "Text",
+ CellChangeTimes->{{3.713727525499839*^9, 
+  3.7137276195976048`*^9}},ExpressionUUID->"4abee91c-eb32-41b2-bac3-\
+33c7d07ab4ce"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Number of iterations needed for convergence", "Subsection",
+ CellChangeTimes->{{3.585514019327592*^9, 
+  3.585514037668663*^9}},ExpressionUUID->"f9c3b369-0545-45e6-bbeb-\
+052b6982cd97"],
+
+Cell[CellGroupData[{
+
+Cell[TextData[{
+ "Generate a sample with ",
+ StyleBox["diceSample[0.4, 0.6, {0.3, 0.3, 0.2, 0.2}, {0.1, 0.2, 0.2, 0.5}, \
+4000, 100]",
+  FontFamily->"Courier",
+  FontSize->14],
+ ". Run ",
+ StyleBox["diceEM",
+  FontFamily->"Courier",
+  FontSize->14],
+ " using 500 iterations and accuracy 10^-5 and round the results to the \
+nearest 0.01 (using ",
+ StyleBox["Round",
+  FontFamily->"Courier"],
+ ", which can be applied to lists and will round numbers at any level). \
+First, verify that your algorithm produces exactly the input distribution, \
+when rounded this way, at least 9 of 10 times. (The samples will be different \
+each time you call ",
+ StyleBox["diceSample",
+  FontFamily->"Courier",
+  FontSize->14,
+  FontWeight->"Regular",
+  FontColor->RGBColor[0., 0., 0.]],
+ ".)"
+}], "ItemNumbered",
+ CellChangeTimes->{{3.5855127044312973`*^9, 3.58551273417302*^9}, {
+  3.58551295062579*^9, 3.585513020764667*^9}, {3.585513134869034*^9, 
+  3.58551319216504*^9}, {3.585513451959071*^9, 3.585513452132319*^9}, {
+  3.585513710184174*^9, 3.585513711052243*^9}, {3.58551379727724*^9, 
+  3.5855138245643673`*^9}, {3.585513892557687*^9, 3.5855139684926777`*^9}, {
+  3.585514048596245*^9, 3.585514048605052*^9}, {3.585514121053053*^9, 
+  3.585514145228565*^9}, {3.713727292009115*^9, 
+  3.7137272940965233`*^9}},ExpressionUUID->"e5dc9f0e-532f-4f13-9ad9-\
+f2e02890d0ea"],
+
+Cell[TextData[{
+ "Now let\[CloseCurlyQuote]s make it easier by rounding to the nearest 0.1. \
+Reduce the maximum number of iterations until you reach the point where your \
+answer is not exactly right when rounded this way about half the time. How \
+many iterations were required to get the right answer half the time? What is \
+the smallest ",
+ StyleBox["maxIterations",
+  FontFamily->"Courier",
+  FontSize->14],
+ " that gives you the right answer on 10 out of 10 samples? Show enough of \
+your experiments to convince the reader of your answer -- but not every \
+single thing you tried."
+}], "ItemNumbered",
+ CellChangeTimes->{{3.5855127044312973`*^9, 3.58551273417302*^9}, {
+  3.58551295062579*^9, 3.585513020764667*^9}, {3.585513134869034*^9, 
+  3.58551319216504*^9}, {3.585513451959071*^9, 3.585513452132319*^9}, {
+  3.585513710184174*^9, 3.585513711052243*^9}, {3.58551379727724*^9, 
+  3.5855138245643673`*^9}, {3.585513892557687*^9, 3.5855139684926777`*^9}, {
+  3.585514048596245*^9, 3.585514114077118*^9}, {3.585514154061596*^9, 
+  3.585514259726389*^9}, {3.585514982224204*^9, 3.585515065450198*^9}, {
+  3.586022455961109*^9, 3.586022457663808*^9}, {3.5860224880717278`*^9, 
+  3.58602248917522*^9}},ExpressionUUID->"6d1aced7-a55d-4ecf-b42b-\
+4eb8f7b698bd"],
+
+Cell[TextData[{
+ "Now try with a more extreme distribution on dice selection: ",
+ StyleBox["diceSample[0.1, 0.9, {0.3, 0.3, 0.2, 0.2}, {0.1, 0.2, 0.2, 0.5}, \
+4000, 100]",
+  FontFamily->"Courier",
+  FontSize->14],
+ ". How much difference does this make in the number of iterations needed to \
+get the right answer?\[LineSeparator]"
+}], "ItemNumbered",
+ CellChangeTimes->{{3.5855127044312973`*^9, 3.58551273417302*^9}, {
+  3.58551295062579*^9, 3.585513020764667*^9}, {3.585513134869034*^9, 
+  3.58551319216504*^9}, {3.585513451959071*^9, 3.585513452132319*^9}, {
+  3.585513710184174*^9, 3.585513711052243*^9}, {3.58551379727724*^9, 
+  3.5855138245643673`*^9}, {3.585513892557687*^9, 3.5855139684926777`*^9}, {
+  3.585514048596245*^9, 3.585514114077118*^9}, {3.585514154061596*^9, 
+  3.585514259726389*^9}, {3.585514982224204*^9, 
+  3.585515123220995*^9}},ExpressionUUID->"0bb7f24f-92ad-4a9a-a14b-\
+c25af5837385"]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Sample size", "Subsection",
+ CellChangeTimes->{{3.585515169813821*^9, 
+  3.585515171525044*^9}},ExpressionUUID->"5f08abad-d89d-4f1d-83aa-\
+c2bad767d4cd"],
+
+Cell["\<\
+For this question, use enough iterations that EM convergence should not be a \
+problem -- at least twice the smallest number that gave you 10 out 10 right. \
+Round your estimates to the nearest 0.1.\
+\>", "Text",
+ CellChangeTimes->{{3.585515218967927*^9, 
+  3.585515298676363*^9}},ExpressionUUID->"8e3547dd-ed27-4afe-a61f-\
+ecc6010b7c27"],
+
+Cell[CellGroupData[{
+
+Cell["\<\
+diceSample[0.4, 0.6, {0.3, 0.3, 0.2, 0.2}, {0.1, 0.2, 0.2, 0.5}, 4000, 100] \
+produces a total 400,000 rolls. That\[CloseCurlyQuote]s a lot of data! Try \
+reducing the number of draws while keeping the number of rolls constant. Try \
+to estimate how many draws you need with 100 rolls each to get the right \
+answer consistently -- say at least 90% of the samples.\
+\>", "ItemNumbered",
+ CellChangeTimes->{{3.585515201208303*^9, 3.585515208932482*^9}, {
+  3.5855152682445917`*^9, 3.5855152889652777`*^9}, {3.5855155648870287`*^9, 
+  3.5855156335836363`*^9}},ExpressionUUID->"c716335e-5275-4619-9690-\
+f2cb1b311422"],
+
+Cell["\<\
+Go back to 4,000 draws and start reducing the number of rolls per draw until \
+you no longer get the right answer consistently. Was the total number of \
+rolls approximately the same as you got by reducing the draws? If not, \
+speculate on why not.\
+\>", "ItemNumbered",
+ CellChangeTimes->{{3.585515201208303*^9, 3.585515208932482*^9}, {
+  3.5855152682445917`*^9, 3.5855152889652777`*^9}, {3.5855155648870287`*^9, 
+  3.585515717852112*^9}, {3.585516029317258*^9, 
+  3.585516047180389*^9}},ExpressionUUID->"5497a398-1e11-4d46-8f3f-\
+96d6c0b6c755"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Grading", "Section",
+ CellChangeTimes->{{3.585589085899582*^9, 3.585589086700222*^9}, {
+  3.586022771579047*^9, 3.586022775165971*^9}, {3.713533800922957*^9, 
+  3.7135338025529737`*^9}},ExpressionUUID->"cffde1e8-3335-4738-a8b1-\
+fa6fce0edd0b"],
+
+Cell["\<\
+These are extra credit points -- they don\[CloseCurlyQuote]t go into the \
+denominator of your percentage -- so I\[CloseCurlyQuote]m a little stingy \
+with them.\
+\>", "Text",
+ CellChangeTimes->{{3.71372763696535*^9, 
+  3.713727662782325*^9}},ExpressionUUID->"1cf0c55d-d3eb-43b7-805c-\
+02d4e34d3c04"],
+
+Cell[CellGroupData[{
+
+Cell["\<\
+1 EC point for an implementation of sampleLabels that passes all the tests \
+and is completely correct.\
+\>", "Item",
+ CellChangeTimes->{{3.7137987915452557`*^9, 
+  3.713798834950604*^9}},ExpressionUUID->"7d2d476b-8066-47f2-9beb-\
+cec18e5915ff"],
+
+Cell["\<\
+1 EC point for a working diceGibbs that passes all the tests and is \
+completely correct. This means basically that you have to implement \
+sampleLabels and sampleThetas correctly.\
+\>", "Item",
+ CellChangeTimes->{{3.7137987915452557`*^9, 
+  3.713798914815587*^9}},ExpressionUUID->"a3c623c4-8c61-4f01-a3a2-\
+0126c6603961"],
+
+Cell["\<\
+1 EC point for answering all the questions and comparing diceGibbs to diceEM. \
+\>", "Item",
+ CellChangeTimes->{{3.7137987915452557`*^9, 
+  3.713798937401935*^9}},ExpressionUUID->"5ebc591d-2be7-4e1b-baf1-\
+b4992e6dfead"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{892, 1005},
+WindowMargins->{{133, Automatic}, {Automatic, 0}},
+Magnification:>1.25 Inherited,
+FrontEndVersion->"11.1 for Mac OS X x86 (32-bit, 64-bit Kernel) (April 18, \
+2017)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[579, 22, 219, 4, 115, "Title", "ExpressionUUID" -> \
+"1b92bbf4-8b82-40ef-8165-6dd122d577fa"],
+Cell[801, 28, 432, 9, 86, "Text", "ExpressionUUID" -> \
+"9d12d190-31bc-4002-9aab-9415ffe9f7f9"],
+Cell[CellGroupData[{
+Cell[1258, 41, 207, 4, 81, "Section", "ExpressionUUID" -> \
+"56f2f245-2342-4129-9d0a-9a762783bb0f"],
+Cell[1468, 47, 2061, 41, 228, "Text", "ExpressionUUID" -> \
+"812a0c74-ffa3-4431-b36e-8ac6175f28b2"],
+Cell[3532, 90, 1231, 21, 181, "Text", "ExpressionUUID" -> \
+"5812b1f6-0bdf-439f-9f41-b320a9efe155"],
+Cell[4766, 113, 738, 13, 157, "Text", "ExpressionUUID" -> \
+"a639eeb8-fd3b-46bc-999d-0adf2a827ac3"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[5541, 131, 150, 3, 81, "Section", "ExpressionUUID" -> \
+"bfa85777-5be8-4708-8aa5-ffb1f5c29475"],
+Cell[CellGroupData[{
+Cell[5716, 138, 274, 6, 57, "Item", "ExpressionUUID" -> \
+"cdf59da3-4d44-411b-b731-edb52a08c046"],
+Cell[5993, 146, 184, 3, 37, "Item", "ExpressionUUID" -> \
+"4d61538e-e5a1-4e40-ab3f-97179ba1bda1"],
+Cell[6180, 151, 293, 7, 37, "Item", "ExpressionUUID" -> \
+"dded21cf-f519-44b9-b1ed-9aa117c786ba"],
+Cell[6476, 160, 303, 6, 57, "Item", "ExpressionUUID" -> \
+"31b5888a-1d25-4c40-92c0-cbb599b18b50"],
+Cell[6782, 168, 273, 6, 37, "Item", "ExpressionUUID" -> \
+"1919f013-6862-4b1c-9023-c028f202a9c9"],
+Cell[7058, 176, 362, 7, 57, "Item", "ExpressionUUID" -> \
+"2f5921bb-7a5e-4f84-9cf0-0c4dc9fa2fbd"],
+Cell[7423, 185, 281, 4, 37, "Item", "ExpressionUUID" -> \
+"f43a11de-05b8-4976-bd7c-cf56220d0efa"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[7753, 195, 149, 3, 81, "Section", "ExpressionUUID" -> \
+"f9fc655a-55a2-403f-92bb-de2b8de4f95e"],
+Cell[7905, 200, 422, 8, 86, "Text", "ExpressionUUID" -> \
+"9d26c98b-5673-46b6-bff0-b0a37b74e835"],
+Cell[8330, 210, 298, 6, 62, "Text", "ExpressionUUID" -> \
+"f550b5c2-c8bb-43ae-8e08-e081eaf755ac"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[8665, 221, 230, 4, 81, "Section", "ExpressionUUID" -> \
+"97153f05-6b94-498d-ae29-74ee4726d4bb"],
+Cell[8898, 227, 242, 4, 38, "Text", "ExpressionUUID" -> \
+"b4cac704-b0f6-4bfa-8801-ffb412c2d694"],
+Cell[CellGroupData[{
+Cell[9165, 235, 413, 11, 58, "Item", "ExpressionUUID" -> \
+"a06bf8a5-9b58-4f1e-8eac-2ad13bc15e6c"],
+Cell[9581, 248, 717, 19, 80, "Item", "ExpressionUUID" -> \
+"7b28b40e-217e-4891-95f5-7a925ae7df75"],
+Cell[10301, 269, 879, 16, 121, "Item", "ExpressionUUID" -> \
+"d8593f5d-9c40-4c59-8ec3-fddcff570095"],
+Cell[11183, 287, 653, 14, 100, "Item", "ExpressionUUID" -> \
+"e0843db0-41e6-4151-b699-8f19912ad70b"]
+}, Open  ]],
+Cell[11851, 304, 338, 7, 62, "Text", "ExpressionUUID" -> \
+"3cb42757-540a-474d-bb1a-f5e179b0f7e4"],
+Cell[CellGroupData[{
+Cell[12214, 315, 411, 8, 57, "Item", "ExpressionUUID" -> \
+"ec5b4b76-c891-4c45-8aab-415d367f1cb7"],
+Cell[12628, 325, 514, 10, 57, "Item", "ExpressionUUID" -> \
+"978bd0d0-1195-4cc6-a5ea-5fbeb5e58581"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[13179, 340, 165, 3, 54, "Subsection", "ExpressionUUID" -> \
+"e85b2d19-a5b3-44dc-b15d-d2990603df54"],
+Cell[13347, 345, 768, 12, 157, "Text", "ExpressionUUID" -> \
+"6b4581b8-38cc-4fca-bd0b-c4eb82fd2ee6"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[14164, 363, 210, 4, 81, "Section", "ExpressionUUID" -> \
+"d6b4746b-7cf6-4eae-957e-5122a63556a2"],
+Cell[CellGroupData[{
+Cell[14399, 371, 309, 9, 37, "Item", "ExpressionUUID" -> \
+"25b2ffb1-1587-481e-a9dc-e8fb3e94626a"],
+Cell[14711, 382, 422, 11, 58, "Item", "ExpressionUUID" -> \
+"b097ea3e-9b59-4d1c-9428-f41eed1b539a"],
+Cell[15136, 395, 727, 18, 59, "Item", "ExpressionUUID" -> \
+"0170a2f0-eae5-43b0-be00-257f0406f1d3"]
+}, Open  ]],
+Cell[15878, 416, 476, 15, 63, "Text", "ExpressionUUID" -> \
+"05dbe24b-1102-43dd-944e-9b83b6b7a2a8"],
+Cell[CellGroupData[{
+Cell[16379, 435, 394, 10, 40, "Input", "ExpressionUUID" -> \
+"3b5af9bc-c93d-4d6d-a892-c0bb0e9a4a7b"],
+Cell[16776, 447, 259, 6, 40, "Output", "ExpressionUUID" -> \
+"5007d79b-39c4-4078-9712-548c221b1903"]
+}, Open  ]],
+Cell[17050, 456, 390, 8, 62, "Text", "ExpressionUUID" -> \
+"6c6036e6-0632-491d-bad3-fbd3c8415aed"],
+Cell[CellGroupData[{
+Cell[17465, 468, 644, 14, 67, "Input", "ExpressionUUID" -> \
+"14f05cc4-554f-433c-8391-960f31f1333f"],
+Cell[18112, 484, 2332, 67, 145, "Output", "ExpressionUUID" -> \
+"82a58353-3678-4758-8cd1-3aaf4f1eb8fc"]
+}, Open  ]],
+Cell[20459, 554, 322, 8, 62, "Text", "ExpressionUUID" -> \
+"0b36a7c7-56bb-4b8c-9b19-55381a13f013"],
+Cell[CellGroupData[{
+Cell[20806, 566, 343, 8, 40, "Input", "ExpressionUUID" -> \
+"dbd5d751-c3eb-4f34-955c-2ec92bae97f7"],
+Cell[21152, 576, 172, 4, 40, "Output", "ExpressionUUID" -> \
+"56456379-3418-475a-8d1c-d9e2c029aee5"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[21361, 585, 313, 7, 40, "Input", "ExpressionUUID" -> \
+"27fde675-9353-4076-8cae-dee58a121807"],
+Cell[21677, 594, 241, 6, 40, "Output", "ExpressionUUID" -> \
+"05d7461b-2da8-4802-a375-230816e8b424"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[21955, 605, 1098, 23, 165, "Item", "ExpressionUUID" -> \
+"dce7dff7-27b6-4091-a019-cd995d6eff5c"],
+Cell[23056, 630, 383, 10, 37, "Item", "ExpressionUUID" -> \
+"d6ba4879-190a-45b1-b594-e6807726dcfa"],
+Cell[23442, 642, 441, 11, 58, "Item", "ExpressionUUID" -> \
+"e523b2df-770c-46a6-a7ee-99d694fc8cca"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[23932, 659, 174, 3, 81, "Section", "ExpressionUUID" -> \
+"4b445bb2-dc06-4ed4-bcd2-51203cc7d62c"],
+Cell[CellGroupData[{
+Cell[24131, 666, 167, 3, 54, "Subsection", "ExpressionUUID" -> \
+"c0555dfb-7e3a-4f54-9699-0663dbcf1798"],
+Cell[24301, 671, 458, 9, 110, "Text", "ExpressionUUID" -> \
+"4abee91c-eb32-41b2-bac3-33c7d07ab4ce"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[24796, 685, 191, 3, 54, "Subsection", "ExpressionUUID" -> \
+"f9c3b369-0545-45e6-bbeb-052b6982cd97"],
+Cell[CellGroupData[{
+Cell[25012, 692, 1358, 33, 152, "ItemNumbered", "ExpressionUUID" -> \
+"e5dc9f0e-532f-4f13-9ad9-f2e02890d0ea"],
+Cell[26373, 727, 1265, 22, 149, "ItemNumbered", "ExpressionUUID" -> \
+"6d1aced7-a55d-4ecf-b42b-4eb8f7b698bd"],
+Cell[27641, 751, 911, 17, 105, "ItemNumbered", "ExpressionUUID" -> \
+"0bb7f24f-92ad-4a9a-a14b-c25af5837385"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[28601, 774, 159, 3, 54, "Subsection", "ExpressionUUID" -> \
+"5f08abad-d89d-4f1d-83aa-c2bad767d4cd"],
+Cell[28763, 779, 348, 7, 86, "Text", "ExpressionUUID" -> \
+"8e3547dd-ed27-4afe-a61f-ecc6010b7c27"],
+Cell[CellGroupData[{
+Cell[29136, 790, 625, 10, 103, "ItemNumbered", "ExpressionUUID" -> \
+"c716335e-5275-4619-9690-f2cb1b311422"],
+Cell[29764, 802, 556, 10, 81, "ItemNumbered", "ExpressionUUID" -> \
+"5497a398-1e11-4d46-8f3f-96d6c0b6c755"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[30381, 819, 249, 4, 81, "Section", "ExpressionUUID" -> \
+"cffde1e8-3335-4738-a8b1-fa6fce0edd0b"],
+Cell[30633, 825, 310, 7, 62, "Text", "ExpressionUUID" -> \
+"1cf0c55d-d3eb-43b7-805c-02d4e34d3c04"],
+Cell[CellGroupData[{
+Cell[30968, 836, 255, 6, 57, "Item", "ExpressionUUID" -> \
+"7d2d476b-8066-47f2-9beb-cec18e5915ff"],
+Cell[31226, 844, 332, 7, 57, "Item", "ExpressionUUID" -> \
+"a3c623c4-8c61-4f01-a3a2-0126c6603961"],
+Cell[31561, 853, 230, 5, 37, "Item", "ExpressionUUID" -> \
+"5ebc591d-2be7-4e1b-baf1-b4992e6dfead"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+}
+]
+*)
+

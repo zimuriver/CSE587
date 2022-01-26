@@ -1,0 +1,469 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 9.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       157,          7]
+NotebookDataLength[     19170,        461]
+NotebookOptionsPosition[     15982,        404]
+NotebookOutlinePosition[     16321,        419]
+CellTagsIndexPosition[     16278,        416]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["Programming exercise", "Section",
+ CellChangeTimes->{{3.584990522242609*^9, 
+  3.584990533174054*^9}},ExpressionUUID->"58882f78-0700-4b88-95f7-\
+61a03e365e3e"],
+
+Cell["\<\
+As we\[CloseCurlyQuote]ve been talking about in class, the diceEM framework \
+can be applied fairly directly to a more tangible real-world example: \
+inferring the binding sequence recognized by a transcription factor.\
+\>", "Text",
+ CellChangeTimes->{{3.6205688175213537`*^9, 
+  3.6205688990380917`*^9}},ExpressionUUID->"1cd39869-a252-47c5-9c7d-\
+6e8047a51e38"],
+
+Cell["\<\
+Just as in the diceEM example, we\[CloseCurlyQuote]ll start our work on this \
+problem by first generating samples of the data we hope to infer parameters \
+from later, letting us generate examples to work with and, importantly, \
+helping us understand how to frame the problem in our heads.\
+\>", "Text",
+ CellChangeTimes->{{3.6205689028220367`*^9, 3.620568962275465*^9}, {
+  3.620569010097549*^9, 
+  3.620569019193364*^9}},ExpressionUUID->"46341eaa-48e7-4eb3-857a-\
+89273089d9dc"],
+
+Cell["\<\
+Our problem setting is this: suppose we have a bag containing two kinds of \
+sequence fragments, some of which were bound by a transcription factor of \
+interest, and some which were not.  All sequences are the same length.  In \
+this assignment, we want to write code that will generate samples from the \
+following experiment: someone draws a sample from the bag at random, records \
+the sequence, then places the sample back in the bag, for some number of \
+times.  As this is very similar to the diceSample assignment, we are calling \
+this siteSample.\
+\>", "Text",
+ CellChangeTimes->{{3.62056902174723*^9, 
+  3.620569218281672*^9}},ExpressionUUID->"2e49a7fd-2234-43c6-b1e1-\
+3f930ac97622"],
+
+Cell["\<\
+We\[CloseCurlyQuote]ll be using numbers to represent bases for convenience in \
+this lab, with the following mapping:
+A <-> 1
+C <-> 2
+G <-> 3
+T <-> 4
+
+The expected output of your sampling function will be numbers in the range of \
+1 to 4.  This might not be as cool as seeing your function generate random \
+bases, but you can always translate back and forth with some mapping \
+functions (this is not required in this assignment).  An example function \
+taking a list of numbers and translating it to bases might look like this:\
+\>", "Text",
+ CellChangeTimes->{{3.6205718909753017`*^9, 
+  3.620572066040618*^9}},ExpressionUUID->"384a6767-30d6-4a9b-a25c-\
+c595a57972e4"],
+
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{
+   RowBox[{"numToBase", "[", "1", "]"}], " ", "=", " ", "\"\<A\>\""}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"numToBase", "[", "2", "]"}], " ", "=", " ", "\"\<C\>\""}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"numToBase", "[", "3", "]"}], " ", "=", " ", "\"\<G\>\""}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{"numToBase", "[", "4", "]"}], " ", "=", " ", "\"\<T\>\""}], 
+  ";"}]}], "Input",
+ CellChangeTimes->{{3.620572096294569*^9, 3.6205721231443996`*^9}},
+ CellLabel->"In[9]:=",ExpressionUUID->"24568113-c1e6-4ba9-9a04-b3192441f50b"],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{
+   RowBox[{"numbersToBases", "[", "listOfNums_", "]"}], ":=", 
+   RowBox[{"Map", "[", 
+    RowBox[{"numToBase", ",", " ", "listOfNums"}], "]"}]}], ";"}]], "Input",
+ CellChangeTimes->{{3.6205720732291613`*^9, 3.620572090358664*^9}, {
+  3.620572129206801*^9, 3.620572139310861*^9}},
+ CellLabel->"In[15]:=",ExpressionUUID->"0e99b3e2-881c-43cb-820b-4600e10c3123"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"numbersToBases", "[", 
+  RowBox[{"{", 
+   RowBox[{"1", ",", "1", ",", "3", ",", "4", ",", "2"}], "}"}], 
+  "]"}]], "Input",
+ CellChangeTimes->{{3.620572141194271*^9, 3.62057214926224*^9}},
+ CellLabel->"In[16]:=",ExpressionUUID->"18ba4589-2f39-4ff4-a399-eb5b0e41435a"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"\<\"A\"\>", ",", "\<\"A\"\>", ",", "\<\"G\"\>", ",", "\<\"T\"\>", 
+   ",", "\<\"C\"\>"}], "}"}]], "Output",
+ CellChangeTimes->{3.620572149994322*^9, 3.7784278480631638`*^9},
+ CellLabel->"Out[16]=",ExpressionUUID->"13bfabe8-c109-4d93-9d53-d5164cdafb25"]
+}, Open  ]],
+
+Cell[TextData[{
+ "For this exercise, write a function called ",
+ StyleBox["siteSample", "Program"],
+ " that takes 5 arguments:\n\nsiteProb = the probability of drawing a bound \
+site from the bag - dice1\nbackgroundProb = the probability of drawing a \
+non-bound site from the bag - dice2\nsiteFreqs = the probabilities of seeing \
+each base in each position in a bound site, with format described below - \
+dice1 probs\nbackgroundFreqs = the probabilities of seeing each base in a \
+position in a non-bound site, with format described below - dice2 probs\n\
+numDraws = the number of times we draw a sequence from the bag - trials"
+}], "Text",
+ CellChangeTimes->{{3.620569234858135*^9, 3.6205693980266457`*^9}, 
+   3.620572388029235*^9, {3.778334517834002*^9, 
+   3.7783345456792173`*^9}},ExpressionUUID->"daec8528-fb74-4686-85ec-\
+b4d0dc73939d"],
+
+Cell["\<\
+The format of the backgroundFreqs input should be one list of four numbers \
+that sum to 1.  We will assume that non-bound sites are essentially drawn at \
+random from a distribution one-by-one, so the chances of seeing an \
+\[OpenCurlyQuote]A\[CloseCurlyQuote] are the same, regardless of the position \
+in the sequence.  One possible backgroundFreqs input would look like this:\
+\>", "Text",
+ CellChangeTimes->{{3.6205694723991756`*^9, 3.620569611298195*^9}, {
+  3.620569695342648*^9, 3.620569740037066*^9}, {3.620569885351067*^9, 
+  3.620569885799212*^9}, {3.7127912313643913`*^9, 
+  3.712791360116435*^9}},ExpressionUUID->"b6f37638-28c1-4563-8725-\
+797123184bc7"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"backgroundFreqs", " ", "=", " ", 
+  RowBox[{"{", 
+   RowBox[{".2", ",", " ", ".2", ",", " ", ".3", ",", " ", ".3"}], 
+   "}"}]}]], "Input",
+ CellChangeTimes->{{3.620569616490746*^9, 3.620569631499071*^9}},
+ CellLabel->"In[17]:=",ExpressionUUID->"96bac54f-eab5-493e-8e72-bc7f7768c6ec"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{"0.2`", ",", "0.2`", ",", "0.3`", ",", "0.3`"}], "}"}]], "Output",
+ CellChangeTimes->{3.778427848073696*^9},
+ CellLabel->"Out[17]=",ExpressionUUID->"3b9d9f75-a193-4f7d-bd65-df79cd724d7a"]
+}, Open  ]],
+
+Cell["\<\
+which would indicate that non-bound sequences are roughly 20% A\
+\[CloseCurlyQuote]s, 20% C\[CloseCurlyQuote]s, 30% G\[CloseCurlyQuote]s, and \
+30% T\[CloseCurlyQuote]s.\
+\>", "Text",
+ CellChangeTimes->{{3.620569634376874*^9, 
+  3.620569673487514*^9}},ExpressionUUID->"c00656ad-4ec7-47f5-8a72-\
+f0b537ad767c"],
+
+Cell["\<\
+The siteFreqs input should be a list of lists, with one sublist for each \
+position in a bound sequence fragment.  Each sublist should be a list with 4 \
+numbers that sum to 1, like in backgroundFreq.  This allows you to specify \
+position-dependent base frequencies.  One  possible siteFreqs would look like \
+this:\
+\>", "Text",
+ CellChangeTimes->{{3.620569409049721*^9, 3.620569465327866*^9}, {
+  3.62056968159896*^9, 3.620569682862939*^9}, {3.620569788250465*^9, 
+  3.620569891646977*^9}, {3.712791386988401*^9, 3.7127914086527843`*^9}, {
+  3.712791453432589*^9, 3.712791472189227*^9}, {3.7127915060217743`*^9, 
+  3.7127915181439753`*^9}},ExpressionUUID->"ef65b9da-3dd0-4309-a652-\
+2d47c5918e8b"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"siteFreqs", " ", "=", " ", 
+  RowBox[{"{", 
+   RowBox[{
+    RowBox[{"{", 
+     RowBox[{".1", ",", " ", ".4", ",", " ", ".4", ",", " ", ".1"}], "}"}], 
+    ",", " ", 
+    RowBox[{"{", 
+     RowBox[{".1", ",", " ", ".4", ",", " ", ".4", ",", " ", ".1"}], "}"}], 
+    ",", " ", 
+    RowBox[{"{", 
+     RowBox[{".8", ",", " ", ".1", ",", " ", ".1", ",", " ", "0"}], "}"}], 
+    ",", 
+    RowBox[{"{", 
+     RowBox[{".8", ",", " ", ".1", ",", " ", ".1", ",", " ", "0"}], "}"}], 
+    ",", " ", 
+    RowBox[{"{", 
+     RowBox[{"0.2", ",", " ", "0.3", ",", " ", "0.2", ",", " ", "0.3"}], 
+     "}"}]}], "}"}]}]], "Input",
+ CellChangeTimes->{{3.620569915273024*^9, 3.620569984781067*^9}, {
+   3.71279157290093*^9, 3.7127915885588493`*^9}, 3.778346616073719*^9},
+ CellLabel->"In[18]:=",ExpressionUUID->"dd1237df-cd07-48eb-bfc1-2c26882172ff"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"0.1`", ",", "0.4`", ",", "0.4`", ",", "0.1`"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"0.1`", ",", "0.4`", ",", "0.4`", ",", "0.1`"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"0.8`", ",", "0.1`", ",", "0.1`", ",", "0"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"0.8`", ",", "0.1`", ",", "0.1`", ",", "0"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"0.2`", ",", "0.3`", ",", "0.2`", ",", "0.3`"}], "}"}]}], 
+  "}"}]], "Output",
+ CellChangeTimes->{3.778335810701743*^9, 3.778346618296421*^9, 
+  3.778427848111465*^9},
+ CellLabel->"Out[18]=",ExpressionUUID->"37276bef-0385-44b2-9cc9-3b73802e3a5a"]
+}, Open  ]],
+
+Cell["\<\
+This would specify a site that is 5 bases wide, with fair chances of seeing \
+either a C or G in the first two positions,  very high chances of seeing an A \
+in each of the next two positions, and Cs and Ts favored over As and G\
+\[CloseCurlyQuote]s in the last position.\
+\>", "Text",
+ CellChangeTimes->{{3.620569987698886*^9, 3.6205700306013803`*^9}, {
+  3.712791594999588*^9, 
+  3.712791653831297*^9}},ExpressionUUID->"7944da45-34fd-4cb1-9799-\
+97116b237966"],
+
+Cell[TextData[{
+ "The",
+ StyleBox[" ",
+  FontWeight->"Bold"],
+ "output should be a list of lists, with each sublist representing the bases \
+in a sequence fragment drawn from the bag.\nHere\[CloseCurlyQuote]s an \
+example of how siteSample should behave:"
+}], "Text",
+ CellChangeTimes->{{3.6205704375931253`*^9, 
+  3.620570510806016*^9}},ExpressionUUID->"00e91fba-6610-4e5b-80fb-\
+e3e60365f685"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"siteSample", "[", 
+   RowBox[{".2", ",", " ", ".8", ",", " ", "siteFreqs", ",", " ", 
+    RowBox[{"{", 
+     RowBox[{".25", ",", " ", ".25", ",", " ", ".25", ",", " ", ".25"}], 
+     "}"}], ",", " ", "3"}], "]"}], "\[IndentingNewLine]"}]], "Input",
+ CellChangeTimes->{{3.620570513417087*^9, 3.620570563652997*^9}, {
+   3.71279176075524*^9, 3.712791760993432*^9}, 3.778346772337112*^9},
+ CellLabel->"In[19]:=",ExpressionUUID->"d5c63e04-0da3-4627-87f1-362fcc614cf6"],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"3", ",", "3", ",", "1", ",", "3", ",", "3"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"2", ",", "1", ",", "4", ",", "3", ",", "4"}], "}"}], ",", 
+   RowBox[{"{", 
+    RowBox[{"4", ",", "3", ",", "3", ",", "3", ",", "3"}], "}"}]}], 
+  "}"}]], "Output",
+ CellChangeTimes->{3.778427848492505*^9},
+ CellLabel->"Out[19]=",ExpressionUUID->"721c9ad0-6bc5-49fb-9929-10be36cb6f5d"]
+}, Open  ]],
+
+Cell["\<\
+Each window is as long as the one specified in siteFreqs, and there are 3, \
+per the last argument given to the function.\
+\>", "Text",
+ CellChangeTimes->{{3.620570582820409*^9, 3.620570607858315*^9}, {
+  3.712791807309019*^9, 
+  3.712791807537928*^9}},ExpressionUUID->"ffd856ac-fdf6-464f-9de0-\
+95b8ec87b2da"],
+
+Cell[BoxData[""], "Input",
+ CellChangeTimes->{{3.7783358069876842`*^9, 3.778335809384029*^9}},
+ CellLabel->"In[20]:=",ExpressionUUID->"337ac83a-4f74-4e2a-89c1-6b854977815f"],
+
+Cell[CellGroupData[{
+
+Cell["Provided files", "Subsection",
+ CellChangeTimes->{{3.585775816707532*^9, 
+  3.585775820937223*^9}},ExpressionUUID->"02c6a037-37a5-46af-8856-\
+0bb14e95d0d4"],
+
+Cell[TextData[{
+ "We have provided a template for ",
+ StyleBox["siteSample",
+  FontFamily->"Courier",
+  FontWeight->"Bold"],
+ " in the file siteSample.m and a basic test suite in the file \
+siteSampleTest.nb. To run the tests, put them in the same directory as the .m \
+file with the solution. From Workbench, right click on the .nb test file and \
+select Run As -> ",
+ StyleBox["Mathematica",
+  FontSlant->"Italic"],
+ " test.\n\nTo get full credit, your answer should be fully correct and \
+should pass all the tests. "
+}], "Text",
+ CellChangeTimes->{{3.5849918841896963`*^9, 3.584992069398471*^9}, {
+   3.585775833209194*^9, 3.58577589504904*^9}, 3.585776459998699*^9, {
+   3.6205706301456013`*^9, 3.620570640617299*^9}, {3.7153442999606524`*^9, 
+   3.7153443037656603`*^9}, {3.715344382748767*^9, 
+   3.715344383418168*^9}},ExpressionUUID->"17efbbc7-2079-4453-8f5d-\
+7df0e6717042"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["A possible approach", "Subsection",
+ CellChangeTimes->{{3.58577633519808*^9, 
+  3.5857763383007107`*^9}},ExpressionUUID->"f4bb7dfe-0a03-453e-af44-\
+7690ec2550d3"],
+
+Cell[TextData[{
+ "As with ",
+ StyleBox["diceSample",
+  FontWeight->"Bold"],
+ ", using ",
+ StyleBox["EmpiricalDistribution",
+  FontWeight->"Bold"],
+ " (with input probabilities as weights) and ",
+ StyleBox["RandomVariate",
+  FontWeight->"Bold"],
+ " ends up being very practical for this assignment.  This is very similar to \
+diceSample, so you should use your implementation of it for reference, \
+keeping in mind that the big difference between the two is that a siteFreq \
+specifies different probabilities for each position, while the dice, like our \
+backgroundFreqs here, treats the face frequencies as independent of position \
+in a drawn sequence."
+}], "Text",
+ CellChangeTimes->{{3.620570674615386*^9, 3.620570807962381*^9}, {
+  3.7127920276642857`*^9, 3.712792028293644*^9}, {3.71279424255786*^9, 
+  3.712794249979372*^9}, {3.712794463190411*^9, 
+  3.7127944742868*^9}},ExpressionUUID->"5e9c6131-1848-4313-9856-0f144a15af5a"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Instructions and grading", "Subsection",
+ CellChangeTimes->{{3.585775925664995*^9, 
+  3.585775928352458*^9}},ExpressionUUID->"2b598e3a-48f7-4b0b-bbc5-\
+a16200342762"],
+
+Cell["\<\
+Please turn in your project following the general instructions. Your .m file \
+should contain the code and sufficient documentation to read and understand it.
+
+The rubric for this is:
+
+1 point for turning in code that produces an output of the right form, \
+consisting of a list of lists appropriate dimensions and containing \
+appropriate integers. 
+
+1 points for turning in code that passes all the tests distributed and is \
+fully correct. Note that passing all the tests does not guarantee that your \
+code implements a correct simulation of the process specified. The test suite \
+just checks for obvious types of errors. Some of the tests are stochastic but \
+they pass with very high probability if you\[CloseCurlyQuote]ve done \
+everything right. Very occasionally they will fail on correct code, so if you\
+\[CloseCurlyQuote]re sure your code is correct and you get a fail, run them \
+again. If it fails again, your code is not correct. 
+\
+\>", "Text",
+ CellChangeTimes->{{3.58499210831761*^9, 3.584992269479895*^9}, {
+   3.584992305927824*^9, 3.584992605885792*^9}, {3.5849926396934137`*^9, 
+   3.584992779654065*^9}, {3.585069175651806*^9, 3.585069213500437*^9}, {
+   3.58577591122612*^9, 3.5857759326650457`*^9}, {3.585776400743526*^9, 
+   3.585776401503727*^9}, {3.585776473877668*^9, 3.585776474151823*^9}, {
+   3.618933811306837*^9, 3.618933900733327*^9}, {3.6189341284840612`*^9, 
+   3.618934348408245*^9}, 3.618934381060604*^9, {3.618934480858489*^9, 
+   3.6189345436861258`*^9}, {3.6189461693876963`*^9, 3.618946173041956*^9}, {
+   3.619181789789781*^9, 3.61918181135361*^9}, 3.6205708310667953`*^9, {
+   3.712792077465188*^9, 3.712792100550667*^9}, {3.7127925885678*^9, 
+   3.7127925898764668`*^9}},ExpressionUUID->"f55a82ec-122b-4c01-bc7e-\
+16360a78d9ad"]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{1045, 1107},
+WindowMargins->{{376, Automatic}, {Automatic, 0}},
+FrontEndVersion->"12.0 for Mac OS X x86 (64-bit) (April 8, 2019)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[579, 22, 165, 3, 67, "Section",ExpressionUUID->"58882f78-0700-4b88-95f7-61a03e365e3e"],
+Cell[747, 27, 372, 7, 58, "Text",ExpressionUUID->"1cd39869-a252-47c5-9c7d-6e8047a51e38"],
+Cell[1122, 36, 492, 9, 58, "Text",ExpressionUUID->"46341eaa-48e7-4eb3-857a-89273089d9dc"],
+Cell[1617, 47, 705, 12, 104, "Text",ExpressionUUID->"2e49a7fd-2234-43c6-b1e1-3f930ac97622"],
+Cell[2325, 61, 681, 16, 219, "Text",ExpressionUUID->"384a6767-30d6-4a9b-a25c-c595a57972e4"],
+Cell[3009, 79, 651, 18, 94, "Input",ExpressionUUID->"24568113-c1e6-4ba9-9a04-b3192441f50b"],
+Cell[3663, 99, 394, 8, 30, "Input",ExpressionUUID->"0e99b3e2-881c-43cb-820b-4600e10c3123"],
+Cell[CellGroupData[{
+Cell[4082, 111, 291, 6, 30, "Input",ExpressionUUID->"18ba4589-2f39-4ff4-a399-eb5b0e41435a"],
+Cell[4376, 119, 292, 5, 34, "Output",ExpressionUUID->"13bfabe8-c109-4d93-9d53-d5164cdafb25"]
+}, Open  ]],
+Cell[4683, 127, 846, 14, 173, "Text",ExpressionUUID->"daec8528-fb74-4686-85ec-b4d0dc73939d"],
+Cell[5532, 143, 677, 11, 81, "Text",ExpressionUUID->"b6f37638-28c1-4563-8725-797123184bc7"],
+Cell[CellGroupData[{
+Cell[6234, 158, 308, 6, 30, "Input",ExpressionUUID->"96bac54f-eab5-493e-8e72-bc7f7768c6ec"],
+Cell[6545, 166, 226, 4, 34, "Output",ExpressionUUID->"3b9d9f75-a193-4f7d-bd65-df79cd724d7a"]
+}, Open  ]],
+Cell[6786, 173, 319, 7, 35, "Text",ExpressionUUID->"c00656ad-4ec7-47f5-8a72-f0b537ad767c"],
+Cell[7108, 182, 710, 12, 81, "Text",ExpressionUUID->"ef65b9da-3dd0-4309-a652-2d47c5918e8b"],
+Cell[CellGroupData[{
+Cell[7843, 198, 855, 21, 30, "Input",ExpressionUUID->"dd1237df-cd07-48eb-bfc1-2c26882172ff"],
+Cell[8701, 221, 673, 16, 34, "Output",ExpressionUUID->"37276bef-0385-44b2-9cc9-3b73802e3a5a"]
+}, Open  ]],
+Cell[9389, 240, 472, 9, 58, "Text",ExpressionUUID->"7944da45-34fd-4cb1-9799-97116b237966"],
+Cell[9864, 251, 395, 10, 58, "Text",ExpressionUUID->"00e91fba-6610-4e5b-80fb-e3e60365f685"],
+Cell[CellGroupData[{
+Cell[10284, 265, 499, 9, 52, "Input",ExpressionUUID->"d5c63e04-0da3-4627-87f1-362fcc614cf6"],
+Cell[10786, 276, 444, 11, 34, "Output",ExpressionUUID->"721c9ad0-6bc5-49fb-9929-10be36cb6f5d"]
+}, Open  ]],
+Cell[11245, 290, 320, 7, 35, "Text",ExpressionUUID->"ffd856ac-fdf6-464f-9de0-95b8ec87b2da"],
+Cell[11568, 299, 173, 2, 30, "Input",ExpressionUUID->"337ac83a-4f74-4e2a-89c1-6b854977815f"],
+Cell[CellGroupData[{
+Cell[11766, 305, 162, 3, 54, "Subsection",ExpressionUUID->"02c6a037-37a5-46af-8856-0bb14e95d0d4"],
+Cell[11931, 310, 884, 19, 104, "Text",ExpressionUUID->"17efbbc7-2079-4453-8f5d-7df0e6717042"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[12852, 334, 168, 3, 54, "Subsection",ExpressionUUID->"f4bb7dfe-0a03-453e-af44-7690ec2550d3"],
+Cell[13023, 339, 934, 20, 104, "Text",ExpressionUUID->"5e9c6131-1848-4313-9856-0f144a15af5a"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[13994, 364, 172, 3, 54, "Subsection",ExpressionUUID->"2b598e3a-48f7-4b0b-bbc5-a16200342762"],
+Cell[14169, 369, 1785, 31, 311, "Text",ExpressionUUID->"f55a82ec-122b-4c01-bc7e-16360a78d9ad"]
+}, Open  ]]
+}, Open  ]]
+}
+]
+*)
+
